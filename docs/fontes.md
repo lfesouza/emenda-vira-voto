@@ -112,10 +112,12 @@ Tabelas usadas na análise:
 
 ## F5 — População municipal (IBGE)
 
-**Tabela:** `basedosdados.br_ibge_populacao.municipio` — `ano` INT64, `sigla_uf` STRING, `id_municipio` STRING, `populacao` INT64. Ano mais recente disponível: a conferir na noite 2.
+**Tabela:** `basedosdados.br_ibge_populacao.municipio` — `ano` INT64, `sigla_uf` STRING, `id_municipio` STRING, `populacao` INT64. Anos 2020–2025 conferidos em 20/10/2026: **2025 é o mais recente** (5.571 municípios, 213.421.037 hab.); 2022 = Censo (5.570). Usado: 2025.
 
 ## F6 — Diretório de municípios
 
 **Tabela:** `basedosdados.br_bd_diretorios_brasil.municipio` — 5.571 linhas (consulta de 19/10/2026).
+
+De-para com o TSE (20/10/2026): `CAST(CD_MUNICIPIO AS INT) = CAST(id_municipio_tse AS INT)` casa os 5.571 municípios da votação para Senador, sem divergência de UF.
 
 Colunas: `id_municipio` STRING (IBGE 7 dígitos), `id_municipio_6` STRING, **`id_municipio_tse` STRING** (de-para com F4), `id_municipio_rf` STRING, `id_municipio_bcb` STRING, `nome` STRING, `capital_uf` INT64, `id_comarca` STRING, `id_regiao_saude` STRING, `nome_regiao_saude` STRING, `id_regiao_imediata` STRING, `nome_regiao_imediata` STRING, `id_regiao_intermediaria` STRING, `nome_regiao_intermediaria` STRING, `id_microrregiao` STRING, `nome_microrregiao` STRING, `id_mesorregiao` STRING, `nome_mesorregiao` STRING, `id_regiao_metropolitana` STRING, `nome_regiao_metropolitana` STRING, `ddd` STRING, `id_uf` STRING, `sigla_uf` STRING, `nome_uf` STRING, `nome_regiao` STRING, `amazonia_legal` INT64, `centroide` GEOGRAPHY

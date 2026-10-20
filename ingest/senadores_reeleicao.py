@@ -92,7 +92,8 @@ em["municipal"] = em["Natureza Jurídica"].isin(ENTE_MUNICIPAL)
 em["no_estado"] = em["UF Favorecido"] == em["sigla_uf"]
 
 mun = em[em["municipal"] & em["no_estado"]]
-res = casados[["id_senador", "sigla_uf", "nome_parlamentar", "sigla_partido", "titular_suplente", "DS_SIT_TOT_TURNO", "casamento"]].copy()
+res = casados[["id_senador", "SQ_CANDIDATO", "sigla_uf", "nome_parlamentar", "sigla_partido", "titular_suplente", "DS_SIT_TOT_TURNO", "casamento"]].copy()
+res = res.merge(aut.dropna()[["id_senador", "Código do Autor da Emenda"]], on="id_senador", how="left")
 res = res.merge(em.groupby("id_senador")["valor"].sum().rename("rs_individual"), on="id_senador", how="left")
 res = res.merge(mun.groupby("id_senador")["valor"].sum().rename("rs_municipal_uf"), on="id_senador", how="left")
 res = res.merge(
@@ -110,7 +111,7 @@ res = res.sort_values(["sigla_uf", "nome_parlamentar"])
 # Formato do Excel em português: separador ;, vírgula decimal, UTF-8 com BOM
 res.to_csv("data/senadores_reeleicao.csv", index=False, sep=";", decimal=",", encoding="utf-8-sig")
 
-out = res.drop(columns=["id_senador"]).copy()
+out = res.drop(columns=["id_senador", "SQ_CANDIDATO", "Código do Autor da Emenda"]).copy()
 for c in ["rs_individual", "rs_municipal_uf", "rs_municipal_outra_uf"]:
     out[c] = (out[c] / 1e6).round(1)
 print("\nValores em R$ milhões:")

@@ -37,7 +37,9 @@ Os números acima são do perfil inicial (janela 2019–2026, todos os autores).
 - **Sensibilidade (a):** só `Emenda Individual - Transferências Especiais`.
 - **Sensibilidade (b):** só pagamentos realizados em 2026 (`Ano/Mês` de 202601 a 202609).
 
-Pendências: de-para manual dos 9 nomes de município que não casam (R$ 0,18 bi). Números a reproduzir por query em `sql/gold/` quando a gold existir.
+Números a reproduzir por query em `sql/gold/` quando a gold existir.
+
+**De-para de nomes (silver, 20/10/2026):** o município do favorecido casa com o diretório da Base dos Dados por UF + nome normalizado. Os 9 nomes que não casavam (R$ 0,18 bi, todos os autores) são municípios renomeados, ligados manualmente ao código IBGE em `notebooks/02_silver.sql` (`depara_municipio_nome`): Brasópolis → Brazópolis (MG), Eldorado dos Carajás → Eldorado do Carajás (PA), Seridó → São Vicente do Seridó (PB), Trajano de Morais → Trajano de Moraes (RJ), Augusto Severo → Campo Grande (RN), Januário Cicco → Boa Saúde (RN), Presidente Juscelino → Serra Caiada (RN), Santana do Livramento → Sant'Ana do Livramento (RS), Embu → Embu das Artes (SP). Depois do de-para, nenhuma linha de ente municipal ficou sem código (0 linhas, R$ 0). Contagem de municípios por código IBGE = contagem por nome para os 32 senadores: ranking inalterado (29).
 
 ### Universo: 32 senadores (20/10/2026, `ingest/senadores_reeleicao.py`)
 - Partida: 54 senadores em exercício com `mandato` = `2019 / 2027` em `br_senado_dados_abertos_administrativos.senador` (47 titulares, 7 suplentes).
@@ -52,7 +54,13 @@ Pendências: de-para manual dos 9 nomes de município que não casam (R$ 0,18 bi
 Resultado (análise principal, janela 2020–2026): 32 senadores; 30 com 15+ municípios; 30 com cobertura 20%+; **29 no ranking**. Fora: Leila Barros (DF), Jaques Wagner (cobertura), Chico Rodrigues (mínimo de municípios). Nenhum R$ municipal fora da UF do senador. Tabela completa: `data/senadores_reeleicao.csv` (gerada pelo script).
 
 ## Fórmulas
-_(a preencher)_
+- **Votos (Y)** = votos nominais válidos do senador no município ÷ votos nominais válidos de todos os candidatos a Senador no município (`QT_VOTOS_NOMINAIS_VALIDOS`, zonas somadas, 1º turno). Ficam fora do denominador os votos `Anulado` (25.284) e `Anulado sub judice` (364.824). Em 2026 cada eleitor votou em 2 senadores, então a soma dos percentuais de todos os candidatos de um município é 200%.
+- **População:** estimativa IBGE de 2025 (`br_ibge_populacao.municipio`, ano mais recente disponível; 5.571 municípios, 213.421.037 habitantes).
+- **Emenda per capita (X):** _(a preencher na gold)_
+
+## Pipeline (Databricks, catálogo `data_glow_up`)
+- **Bronze** (`notebooks/01_bronze.sql`): arquivos brutos em Parquet gerados por `ingest/bronze.py` e enviados ao Volume `bronze.arquivos`. Único filtro: a votação TSE entra só com o cargo Senador (74.447 das 6.730.564 linhas do arquivo). Tabelas: `emenda_favorecido` (827.457), `votacao_senador_munzona` (74.447), `municipio` (5.571), `populacao` (191.099), `senador_reeleicao` (32).
+- **Silver** (`notebooks/02_silver.sql`): `senador` (32), `emenda_senador` (29.167 linhas; R$ 8,74 bi individuais, dos quais R$ 4,64 bi de ente municipal na UF), `voto_municipio` (votos válidos por candidato e município; 207.038.240 votos, 5.571 municípios, os 32 presentes), `populacao` (2025). O de-para código TSE → IBGE pelo diretório casa 100% dos municípios.
 
 ## Limitações
 - **Distrito Federal fora da análise.** O DF tem um único "município" (Brasília), então a comparação município a município dentro do estado não se aplica.
