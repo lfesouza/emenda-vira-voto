@@ -70,8 +70,25 @@ Nomes de tabelas e colunas copiados de consultas reais (nunca digitados de memó
 **Pontos de atenção:**
 - O autor só é identificado por `id_autor_emenda`/`nome_autor_emenda` (código do Portal da Transparência), **sem ID do Senado nem do TSE** → casar com os 32 senadores por nome (registrar regra e casos ambíguos na METODOLOGIA).
 - Valor pago (PRD): `valor_pago` + `valor_resto_pagar_pagos`.
-- Valores de `tipo_emenda` e % sem `id_municipio_gasto`: a perfilar na noite 2.
+- **Perfil (19/10/2026, `ingest/perfil_emendas.py`):**
+  - Cobertura: `ano_emenda` de **2014 a 2025** (88.993 linhas). **Não há 2026.**
+  - `tipo_emenda` (2019–2025, R$ pago = `valor_pago` + `valor_resto_pagar_pagos`): `Emenda Individual - Transferências com Finalidade Definida` (41.442 linhas, R$ 74,08 bi), `Emenda Individual - Transferências Especiais` (4.430; R$ 27,66 bi), `Emenda de Bancada` (2.369; R$ 43,31 bi), `Emenda de Relator` (547; R$ 40,47 bi), `Emenda de Comissão` (422; R$ 21,59 bi).
+  - `id_municipio_gasto` nunca é nulo: quando não há município vem o texto `Sem informação`.
+  - **Individuais 2019–2025 com município válido (casa com o diretório): 12.344 linhas, R$ 10,34 bi de R$ 101,75 bi (~10%).** Sem município: 33.528 linhas, R$ 91,40 bi — dos quais R$ 89,34 bi com `localidade` nula e R$ 2,07 bi com `localidade` = Nacional/regiões/Exterior.
 - Existe outro dataset "Emendas Parlamentares" (Congresso Nacional) no catálogo, sem tabela no BigQuery — não usado.
+
+## F1b — Emendas por favorecido (Portal da Transparência, fonte externa complementar)
+
+- **Download:** https://portaldatransparencia.gov.br/download-de-dados/emendas-parlamentares/UNICO → redireciona para `https://dadosabertos-download.cgu.gov.br/PortalDaTransparencia/saida/emendas-parlamentares/EmendasParlamentares.zip`
+- **Checagem:** HTTP 200, 32.490.844 bytes, `Last-Modified: Sat, 10 Oct 2026 02:57:21 GMT`.
+- **Conteúdo do zip:** `EmendasParlamentares.csv` (mesma base da F1), `EmendasParlamentares_Convenios.csv`, **`EmendasParlamentares_PorFavorecido.csv`** (827.457 linhas; `Ano/Mês` de pagamento de 201406 a 202610). CSV `;`, latin-1, decimal com vírgula.
+- **Colunas de `EmendasParlamentares_PorFavorecido.csv`:** `Código da Emenda`, `Código do Autor da Emenda`, `Nome do Autor da Emenda`, `Número da emenda`, `Tipo de Emenda`, `Ano/Mês`, `Código do Favorecido`, `Favorecido`, `Natureza Jurídica`, `Tipo Favorecido`, `UF Favorecido`, `Município Favorecido`, `Valor Recebido`.
+- **Atenção:**
+  - Município do favorecido vem **só por nome** (sem código IBGE). Casamento por nome+UF normalizados (sem acento, maiúsculas) com `br_bd_diretorios_brasil.municipio`: 99,7% do R$ do critério municipal casa; 9 nomes não casam (ex.: `EMBU`/SP, `PRESIDENTE JUSCELINO`/RN, `SANTANA DO LIVRAMENTO`/RS) — de-para manual no silver.
+  - Ano da emenda = 4 primeiros dígitos de `Código da Emenda` (mesmo critério de `ano_emenda` da F1).
+  - R$ 39,77 bi das individuais 2019–2026 têm como favorecido o **BANCO DO BRASIL SA** (`00000000000191`, natureza Sociedade de Economia Mista) — intermediário, sem município de destino.
+  - Os dados vão até `Ano/Mês` = 202610, ou seja, **incluem pagamentos posteriores à eleição de 04/10/2026**.
+- **Perfil:** `ingest/perfil_favorecido.py data/portal/EmendasParlamentares.zip`.
 
 ## F2 — Senado legislativo
 
