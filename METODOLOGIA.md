@@ -56,7 +56,7 @@ Resultado (análise principal, janela 2020–2026): 32 senadores; 30 com 15+ mun
 ## Fórmulas
 - **Votos (Y)** = votos nominais válidos do senador no município ÷ votos nominais válidos de todos os candidatos a Senador no município (`QT_VOTOS_NOMINAIS_VALIDOS`, zonas somadas, 1º turno). Ficam fora do denominador os votos `Anulado` (25.284) e `Anulado sub judice` (364.824). Em 2026 cada eleitor votou em 2 senadores, então a soma dos percentuais de todos os candidatos de um município é 200%.
 - **População:** estimativa IBGE de 2025 (`br_ibge_populacao.municipio`, ano mais recente disponível; 5.571 municípios, 213.421.037 habitantes).
-- **Emenda per capita (X):** _(a preencher na gold)_
+- **Emenda per capita (X):** _(fórmula a preencher na gold)_. **Decisão (20/10/2026):** todos os municípios da UF do senador entram na correlação; quem não recebeu emenda do senador entra com X = 0. Assim, o n de cada senador é o número de municípios da UF. O mínimo de 15 municípios *com emenda* continua valendo como regra de entrada no ranking.
 
 ## Pipeline (Databricks, catálogo `data_glow_up`)
 - **Bronze** (`notebooks/01_bronze.sql`): arquivos brutos em Parquet gerados por `ingest/bronze.py` e enviados ao Volume `bronze.arquivos`. Único filtro: a votação TSE entra só com o cargo Senador (74.447 das 6.730.564 linhas do arquivo). Tabelas: `emenda_favorecido` (827.457), `votacao_senador_munzona` (74.447), `municipio` (5.571), `populacao` (191.099), `senador_reeleicao` (32).

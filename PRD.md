@@ -99,7 +99,7 @@ A comparação **dentro do estado** evita comparar Amapá com São Paulo e é o 
 
 **Votos (Y):** votos nominais do senador ÷ votos válidos para senador no município (lembrando que em 2026 cada eleitor votou em 2 senadores — usar a definição do TSE e documentar).
 
-**Métrica por senador:** correlação de Spearman entre X per capita e Y, ponderada por eleitorado como sensibilidade. Spearman porque emenda per capita tem cauda longa.
+**Métrica por senador:** correlação de Spearman entre X per capita e Y, ponderada por eleitorado como sensibilidade. Todos os municípios da UF entram; os que não receberam emenda do senador entram com X = 0 *(20/10/2026)*. Spearman porque emenda per capita tem cauda longa.
 
 **Regras de leitura:**
 - Mínimo de 15 municípios com emenda para o senador entrar no ranking. Roraima (15 municípios) fica no limite: registrado como limitação de estado pequeno.
