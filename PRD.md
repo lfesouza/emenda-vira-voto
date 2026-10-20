@@ -92,9 +92,9 @@ A comparação **dentro do estado** evita comparar Amapá com São Paulo e é o 
 
 **Emendas (X):**
 - Somente **emendas individuais** cujo autor é o senador (excluir bancada, comissão e relator; RP9 não é atribuível por autor nesta base).
-- Período: **2019–2026** (mandato que se encerrava).
+- Período: **ano da emenda 2020–2026** — emendas apresentadas durante o mandato que se encerrava (as de ano 2019 foram apresentadas no fim de 2018, no mandato anterior). Pagamentos até 09/2026. *(Revisado em 20/10/2026; antes: 2019–2026.)*
 - Valor: **pago** (incluindo restos a pagar pagos). Valor empenhado como análise de sensibilidade.
-- Localidade: apenas emendas com **município identificado**. Reportar o % do total que ficou sem município (estadual/nacional) — esse número vai no post.
+- Localidade: apenas emendas com **município identificado**. Reportar o % do total que ficou sem município (estadual/nacional) — esse número vai no post. *(20/10/2026: município atribuído pelo arquivo "por favorecido" do Portal da Transparência, só quando o favorecido é o próprio ente municipal — ver `METODOLOGIA.md`.)*
 - Valores nominais (sem correção) na v1; IPCA como Could.
 
 **Votos (Y):** votos nominais do senador ÷ votos válidos para senador no município (lembrando que em 2026 cada eleitor votou em 2 senadores — usar a definição do TSE e documentar).
@@ -102,7 +102,9 @@ A comparação **dentro do estado** evita comparar Amapá com São Paulo e é o 
 **Métrica por senador:** correlação de Spearman entre X per capita e Y, ponderada por eleitorado como sensibilidade. Spearman porque emenda per capita tem cauda longa.
 
 **Regras de leitura:**
-- Mínimo de 15 municípios com emenda para o senador entrar no ranking.
+- Mínimo de 15 municípios com emenda para o senador entrar no ranking. Roraima (15 municípios) fica no limite: registrado como limitação de estado pequeno.
+- **Cobertura mínima de 20%:** o R$ atribuível a municípios da própria UF precisa ser ≥ 20% do R$ em emendas individuais do senador. Quem fica abaixo sai do ranking e aparece na página como perfil de destinação diferente (ex.: governo estadual), em linguagem neutra. *(20/10/2026)*
+- **DF fora do ranking:** com um único município, a comparação dentro do estado não se aplica. *(20/10/2026)*
 - Exibir sempre n, ρ e intervalo/valor-p; não destacar ρ isolado de amostra pequena.
 - Linguagem descritiva: "municípios que receberam mais tiveram/não tiveram mais votos". Nunca "comprou", "pagou por", sem aspas de manchete testada.
 
