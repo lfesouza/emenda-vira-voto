@@ -87,6 +87,39 @@ LEFT JOIN data_glow_up.silver.depara_municipio_nome dp
 
 -- COMMAND ----------
 
+-- Emendas individuais de ente municipal de TODOS os autores (base do placebo "emenda dos outros parlamentares")
+CREATE OR REPLACE TABLE data_glow_up.silver.emenda_municipal_todos AS
+WITH em AS (
+  SELECT
+    e.codigo_do_autor_da_emenda AS codigo_autor,
+    e.tipo_de_emenda AS tipo_emenda,
+    e.ano_mes,
+    e.uf_favorecido,
+    e.municipio_favorecido,
+    CAST(replace(e.valor_recebido, ',', '.') AS DECIMAL(18, 2)) AS valor
+  FROM data_glow_up.bronze.emenda_favorecido e
+  WHERE e.tipo_de_emenda LIKE '%Individual%'
+    AND try_cast(left(e.codigo_da_emenda, 4) AS INT) BETWEEN 2020 AND 2026
+    AND e.ano_mes <= '202609'
+    AND e.natureza_juridica IN (
+      'Município',
+      'Fundo Público da Administração Direta Municipal',
+      'Órgão Público do Poder Executivo Municipal'
+    )
+),
+dir AS (
+  SELECT sigla_uf, data_glow_up.silver.norm(nome) AS nome_norm, id_municipio
+  FROM data_glow_up.bronze.municipio
+)
+SELECT em.*, coalesce(dir.id_municipio, dp.id_municipio) AS id_municipio
+FROM em
+LEFT JOIN dir
+  ON em.uf_favorecido = dir.sigla_uf AND data_glow_up.silver.norm(em.municipio_favorecido) = dir.nome_norm
+LEFT JOIN data_glow_up.silver.depara_municipio_nome dp
+  ON em.uf_favorecido = dp.sigla_uf AND data_glow_up.silver.norm(em.municipio_favorecido) = dp.nome_norm;
+
+-- COMMAND ----------
+
 -- Votação: soma as zonas; CD_MUNICIPIO é código TSE -> id_municipio (IBGE) pelo diretório
 CREATE OR REPLACE TABLE data_glow_up.silver.voto_municipio AS
 SELECT
@@ -104,8 +137,13 @@ GROUP BY ALL;
 
 -- COMMAND ----------
 
+-- Correção de fonte: em 2025 há 1 linha sem código e sem UF (5.877 hab.) e Boa Esperança do Norte/MT (5101837),
+-- município novo, é o único do diretório sem população. A linha é atribuída a ele (decisão de 20/10/2026).
 CREATE OR REPLACE TABLE data_glow_up.silver.populacao AS
-SELECT id_municipio, sigla_uf, CAST(populacao AS BIGINT) AS populacao
+SELECT
+  coalesce(id_municipio, '5101837') AS id_municipio,
+  coalesce(sigla_uf, 'MT') AS sigla_uf,
+  CAST(populacao AS BIGINT) AS populacao
 FROM data_glow_up.bronze.populacao
 WHERE ano = '2025';
 
@@ -125,6 +163,12 @@ SELECT
   ROUND(SUM(CASE WHEN ente_municipal AND id_municipio IS NULL THEN valor ELSE 0 END), 2) AS rs_municipal_sem_codigo
 FROM data_glow_up.silver.emenda_senador;
 
+-- Todos os autores: linhas sem código IBGE (esperado 0) e R$ total
+SELECT COUNT(*) AS linhas, ROUND(SUM(valor) / 1e9, 2) AS rs_bi,
+  SUM(CASE WHEN id_municipio IS NULL THEN 1 ELSE 0 END) AS sem_codigo,
+  ROUND(SUM(CASE WHEN id_municipio IS NULL THEN valor ELSE 0 END), 2) AS rs_sem_codigo
+FROM data_glow_up.silver.emenda_municipal_todos;
+
 -- Municípios distintos por senador: por código IBGE (silver) x por nome (bronze, contagem do script Python)
 SELECT s.sigla_uf, s.nome_parlamentar, b.n_municipios AS n_por_nome, COUNT(DISTINCT e.id_municipio) AS n_por_codigo
 FROM data_glow_up.silver.senador s
@@ -141,5 +185,8 @@ SELECT
   COUNT(DISTINCT CASE WHEN sq_candidato IN (SELECT sq_candidato FROM data_glow_up.silver.senador) THEN sq_candidato END) AS senadores_32
 FROM data_glow_up.silver.voto_municipio;
 
--- População 2025: esperado 5.571 municípios, 213.421.037 habitantes
-SELECT COUNT(*) AS municipios, SUM(populacao) AS populacao FROM data_glow_up.silver.populacao;
+-- População 2025: esperado 5.571 municípios, 213.421.037 habitantes e todos presentes no diretório
+SELECT COUNT(*) AS municipios, SUM(populacao) AS populacao,
+  COUNT(*) - COUNT(m.id_municipio) AS fora_do_diretorio
+FROM data_glow_up.silver.populacao p
+LEFT JOIN data_glow_up.bronze.municipio m USING (id_municipio);

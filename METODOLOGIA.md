@@ -55,7 +55,11 @@ Resultado (análise principal, janela 2020–2026): 32 senadores; 30 com 15+ mun
 
 ## Fórmulas
 - **Votos (Y)** = votos nominais válidos do senador no município ÷ votos nominais válidos de todos os candidatos a Senador no município (`QT_VOTOS_NOMINAIS_VALIDOS`, zonas somadas, 1º turno). Ficam fora do denominador os votos `Anulado` (25.284) e `Anulado sub judice` (364.824). Em 2026 cada eleitor votou em 2 senadores, então a soma dos percentuais de todos os candidatos de um município é 200%.
-- **População:** estimativa IBGE de 2025 (`br_ibge_populacao.municipio`, ano mais recente disponível; 5.571 municípios, 213.421.037 habitantes).
+- **População:** estimativa IBGE de 2025 (`br_ibge_populacao.municipio`, ano mais recente disponível; 5.571 municípios, 213.421.037 habitantes). **Correção de fonte (20/10/2026):** em 2025 a tabela tem 1 linha sem `id_municipio` e sem `sigla_uf` (5.877 hab.), e Boa Esperança do Norte/MT (5101837), município novo, é o único do diretório sem população. A linha foi atribuída a ele no silver (5.804 votos válidos para Senador no município; R$ 349.989 em emendas de um dos 32). Nenhuma linha ou R$ descartado.
+- **Robustez** (`notebooks/04_correlacao.py`, tabela `gold.robustez_senador`, cenário principal):
+  - *Parcial:* Spearman entre X e Y controlando pela população — correlação parcial sobre os postos, valor-p pela t com n − 3 g.l. Testa se o ρ é só efeito do tamanho do município (per capita é maior em município pequeno).
+  - *Placebo 1 — emenda dos outros:* X trocado pelas emendas individuais per capita de todos os outros autores (deputados e demais senadores) para o município, mesma janela e critério de ente municipal (`silver.emenda_municipal_todos`), contra o voto do senador. Se o placebo for tão alto quanto o ρ original, a relação reflete o perfil do município, não a emenda do senador.
+  - *Placebo 2 — voto dos outros:* X do senador contra o % de cada outro candidato a Senador da UF (mediana dos ρ). Referência fraca: os percentuais de um município somam 200%, o que puxa o ρ para baixo mecanicamente.
 - **Emenda per capita (X):** _(fórmula a preencher na gold)_. **Decisão (20/10/2026):** todos os municípios da UF do senador entram na correlação; quem não recebeu emenda do senador entra com X = 0. Assim, o n de cada senador é o número de municípios da UF. O mínimo de 15 municípios *com emenda* continua valendo como regra de entrada no ranking.
 
 ## Pipeline (Databricks, catálogo `data_glow_up`)

@@ -48,6 +48,11 @@ WITH em AS (
   FROM data_glow_up.silver.emenda_senador
   WHERE ente_municipal AND uf_favorecido = uf_senador
   GROUP BY ALL
+),
+todos AS (
+  SELECT id_municipio, SUM(valor) AS rs_todos
+  FROM data_glow_up.silver.emenda_municipal_todos
+  GROUP BY id_municipio
 )
 -- Todos os municípios da UF do senador; quem não recebeu emenda entra com 0
 SELECT
@@ -60,10 +65,14 @@ SELECT
   coalesce(em.rs_pagos_2026, 0) AS rs_pagos_2026,
   coalesce(em.rs_principal, 0) / p.populacao AS pc_principal,
   coalesce(em.rs_transf_especiais, 0) / p.populacao AS pc_transf_especiais,
-  coalesce(em.rs_pagos_2026, 0) / p.populacao AS pc_pagos_2026
+  coalesce(em.rs_pagos_2026, 0) / p.populacao AS pc_pagos_2026,
+  -- Placebo: emendas de todos os outros autores (deputados e demais senadores) para o mesmo município
+  coalesce(t.rs_todos, 0) - coalesce(em.rs_principal, 0) AS rs_outros,
+  (coalesce(t.rs_todos, 0) - coalesce(em.rs_principal, 0)) / p.populacao AS pc_outros
 FROM data_glow_up.silver.senador s
 JOIN data_glow_up.silver.populacao p ON p.sigla_uf = s.sigla_uf
-LEFT JOIN em ON em.id_senador = s.id_senador AND em.id_municipio = p.id_municipio;
+LEFT JOIN em ON em.id_senador = s.id_senador AND em.id_municipio = p.id_municipio
+LEFT JOIN todos t ON t.id_municipio = p.id_municipio;
 
 -- COMMAND ----------
 
@@ -130,7 +139,8 @@ FROM data_glow_up.gold.senador_regras;
 
 -- X: soma do cenário principal = R$ municipal na UF; linhas = soma dos municípios das UFs dos 32
 SELECT COUNT(*) AS linhas, ROUND(SUM(rs_principal) / 1e9, 2) AS rs_principal_bi,
-  ROUND(SUM(rs_transf_especiais) / 1e9, 2) AS rs_te_bi, ROUND(SUM(rs_pagos_2026) / 1e9, 2) AS rs_2026_bi
+  ROUND(SUM(rs_transf_especiais) / 1e9, 2) AS rs_te_bi, ROUND(SUM(rs_pagos_2026) / 1e9, 2) AS rs_2026_bi,
+  SUM(CASE WHEN rs_outros < 0 THEN 1 ELSE 0 END) AS outros_negativo
 FROM data_glow_up.gold.emenda_mun_senador;
 
 -- Y: todo senador × município da UF precisa ter voto (esperado 0 faltando)
