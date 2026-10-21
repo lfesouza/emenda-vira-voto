@@ -23,7 +23,7 @@ __pycache__/
 .ipynb_checkpoints/
 
 # Dados brutos e intermediários (pesados; reproduzíveis pelos scripts de ingest/)
-data/
+/data/
 *.parquet
 *.zip
 *.csv

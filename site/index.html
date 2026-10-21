@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Emenda vira voto?</title>
+  <meta name="description" content="Emendas parlamentares e votos dos 32 senadores que tentaram a reeleição em 2026, município a município, dentro de cada estado.">
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
+</head>
+<body>
+<main>
+  <header class="abertura">
+    <p class="selo">#DataGlowUp · Eleições 2026</p>
+    <h1>Emenda vira voto?</h1>
+    <p class="linha-fina">Nos municípios que mais receberam emendas de um senador, ele teve mais votos em 2026?
+      Comparamos, dentro de cada estado, os 32 senadores que tentaram a reeleição.</p>
+    <p class="manchete">Para a maioria dos senadores, os municípios que receberam mais emenda per capita deram a eles
+      uma fatia maior dos votos. A relação é moderada e, para alguns, não se distingue do padrão das emendas de
+      outros parlamentares.</p>
+  </header>
+
+  <section class="destaques" aria-label="Números principais">
+    <div class="tile"><span class="tile-valor" id="t-rs">—</span>
+      <span class="tile-rotulo">em emendas individuais dos 32 senadores (emendas de 2020 a 2026, pagas até set/2026)</span></div>
+    <div class="tile"><span class="tile-valor" id="t-pct">—</span>
+      <span class="tile-rotulo">foram pagos ao próprio município (prefeitura ou fundo municipal) no estado do senador — a parte que dá para comparar município a município</span></div>
+    <div class="tile"><span class="tile-valor" id="t-sig">—</span>
+      <span class="tile-rotulo">senadores do ranking têm relação positiva estatisticamente significativa (p &lt; 0,05); nenhum tem relação negativa significativa</span></div>
+  </section>
+
+  <section>
+    <h2>Senador a senador</h2>
+    <p>Cada linha é um senador. O ponto <span class="chave chave-1"></span> azul é a correlação (ρ de Spearman)
+      entre a emenda per capita que ele mandou a cada município do seu estado e o percentual de votos que teve ali.
+      O ponto <span class="chave chave-2"></span> laranja é o <strong>placebo</strong>: a mesma conta com as emendas de
+      <em>todos os outros</em> parlamentares para aqueles municípios. Quando o laranja está tão à direita quanto o
+      azul, a relação parece ser do perfil do município, não da emenda do senador.</p>
+    <p class="nota">ρ vai de −1 a 1; 0 = nenhuma relação. Ponto cheio: p &lt; 0,05. Ponto vazado: não significativo.
+      Clique numa linha para ver o mapa do senador.</p>
+    <div id="g-ranking" class="grafico" role="img" aria-label="Correlação por senador e placebo"></div>
+  </section>
+
+  <section>
+    <h2>O mapa de cada senador</h2>
+    <div class="filtro">
+      <label for="sel-senador">Senador</label>
+      <select id="sel-senador"></select>
+    </div>
+    <p id="resumo-senador" class="resumo"></p>
+    <div class="par">
+      <div>
+        <h3>Emenda por habitante</h3>
+        <div id="g-mapa" class="grafico" role="img" aria-label="Mapa da emenda per capita por município"></div>
+        <div id="legenda-mapa" class="legenda"></div>
+      </div>
+      <div>
+        <h3>Emenda por habitante × % dos votos</h3>
+        <div id="g-dispersao" class="grafico" role="img" aria-label="Dispersão entre emenda per capita e percentual de votos"></div>
+        <p class="nota">Cada ponto é um município. Eixo horizontal em escala de raiz quadrada.</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>A relação resiste aos testes?</h2>
+    <p>ρ mediano dos 29 senadores em cada teste. Controlar pelo tamanho do município ou ponderar pelos votos válidos
+      quase não muda o resultado. Trocar a emenda do senador pela dos outros parlamentares derruba o ρ mediano.</p>
+    <div id="g-robustez" class="grafico" role="img" aria-label="ρ mediano por teste de robustez"></div>
+    <div class="legenda">
+      <span><span class="chave chave-1"></span> emenda do próprio senador</span>
+      <span><span class="chave chave-2"></span> placebo</span>
+    </div>
+  </section>
+
+  <section>
+    <h2>Como foi feito — e o que não dá para concluir</h2>
+    <p><strong>O que medimos.</strong> Para cada senador, em cada município do seu estado: X = emendas individuais
+      pagas ao próprio município — prefeitura ou fundo municipal — (ano da emenda 2020–2026, pagamentos até setembro de 2026) divididas pela população de 2025;
+      Y = percentual dos votos válidos para Senador que ele teve no 1º turno de 04/10/2026 (cada eleitor votou em dois
+      senadores, então os percentuais de um município somam 200%). Municípios sem emenda entram com X = 0. A correlação
+      é de Spearman. Entram no ranking os 29 senadores com pelo menos 15 municípios com emenda e pelo menos 20% das
+      emendas pagas a municípios do estado.</p>
+    <p><strong>O que não medimos.</strong> Correlação não é causalidade. A emenda pode ir para onde o senador já tinha
+      voto (causalidade reversa), acompanhar prefeitos aliados ou refletir o efeito de quem já está no cargo.
+      <span id="m-sem"></span> do valor não tem município identificado (governo estadual, Banco do Brasil como
+      intermediário, entidades) e fica de fora. População não é eleitorado.</p>
+    <p><strong>Fontes e reprodução.</strong> Emendas por favorecido: Portal da Transparência (CGU). Votos: TSE.
+      População e diretório de municípios: IBGE via Base dos Dados. Malha municipal: IBGE. Pipeline em Databricks
+      (bronze, silver, gold); cada número desta página sai de uma query versionada em <code>sql/gold/</code>.
+      <a id="link-repo" href="#">Repositório com código, metodologia e limitações</a>.</p>
+  </section>
+
+  <section>
+    <h2>Tabela completa</h2>
+    <div class="tabela-wrap">
+      <table id="tabela">
+        <thead><tr>
+          <th>UF</th><th>Senador</th><th>Partido</th><th>Resultado 2026</th>
+          <th class="num">R$ a municípios (mi)</th><th class="num">Cobertura</th>
+          <th class="num">n</th><th class="num">Com emenda</th><th class="num">ρ</th><th class="num">p</th>
+          <th class="num">ρ parcial (pop.)</th><th class="num">ρ placebo</th><th>Observação</th>
+        </tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+    <p class="nota">Cobertura = parte das emendas individuais do senador paga a municípios (prefeitura ou fundo municipal) do seu estado.
+      Boa Esperança do Norte (MT), município criado recentemente, entra nas contas, mas não tem malha no IBGE e não
+      aparece no mapa.</p>
+  </section>
+</main>
+<div id="tooltip" class="tooltip" role="status" hidden></div>
+<script src="app.js"></script>
+</body>
+</html>

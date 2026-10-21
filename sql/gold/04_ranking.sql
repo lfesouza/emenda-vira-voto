@@ -1,5 +1,6 @@
 -- Tabela por senador (os 32): resultado eleitoral, n, ρ e testes; motivo de quem fica fora do ranking.
 SELECT
+  s.id_senador,
   s.sigla_uf,
   s.nome_parlamentar,
   s.sigla_partido,
