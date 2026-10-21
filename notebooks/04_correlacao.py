@@ -26,13 +26,14 @@ for id_senador, g in base.groupby("id_senador"):
         linhas.append((id_senador, cenario, len(g), float(rho), float(p)))
 
 res = pd.DataFrame(linhas, columns=["id_senador", "cenario", "n", "rho_scipy", "p_valor"])
-spark.createDataFrame(res).write.mode("overwrite").saveAsTable("data_glow_up.gold.correlacao_pvalor")
+spark.createDataFrame(res).write.mode("overwrite").option("overwriteSchema", "true").saveAsTable("data_glow_up.gold.correlacao_pvalor")
 
 # COMMAND ----------
 
 # MAGIC %md
 # MAGIC ## Robustez (cenário principal)
 # MAGIC - **Parcial:** Spearman entre X e Y controlando pela população (correlação parcial sobre os postos; t com n − 3 g.l.).
+# MAGIC - **Ponderado:** Pearson ponderado pelos votos válidos para Senador sobre os postos (proxy do eleitorado; sem valor-p).
 # MAGIC - **Placebo 1 — emenda dos outros:** X trocado pelas emendas per capita de todos os outros autores para o município, contra o voto do senador.
 # MAGIC - **Placebo 2 — voto dos outros:** X do senador contra o % de cada outro candidato a Senador da UF (mediana dos ρ).
 # MAGIC   Referência fraca: os % de um município somam 200%, então há viés mecânico para ρ negativo.
@@ -52,8 +53,16 @@ def parcial(x, y, z):
     return float(r), float(2 * dist_t.sf(abs(estat), gl))
 
 
+def ponderado(x, y, w):
+    # Pearson ponderado sobre os postos (Spearman ponderado); sem valor-p padrão
+    rx, ry, w = rankdata(x), rankdata(y), np.asarray(w, dtype=float)
+    mx, my = np.average(rx, weights=w), np.average(ry, weights=w)
+    cov = np.average((rx - mx) * (ry - my), weights=w)
+    return float(cov / np.sqrt(np.average((rx - mx) ** 2, weights=w) * np.average((ry - my) ** 2, weights=w)))
+
+
 mun = spark.sql("""
-    SELECT e.id_senador, e.id_municipio, e.populacao, e.pc_principal, e.pc_outros, v.pct_votos
+    SELECT e.id_senador, e.id_municipio, e.populacao, e.pc_principal, e.pc_outros, v.pct_votos, v.votos_validos_senador
     FROM data_glow_up.gold.emenda_mun_senador e
     JOIN data_glow_up.gold.voto_mun_senador v USING (id_senador, id_municipio)
 """).toPandas()
@@ -66,7 +75,7 @@ outros = spark.sql("""
 outros = outros[outros["sq_candidato"] != outros["id_senador"].map(
     spark.table("data_glow_up.silver.senador").toPandas().set_index("id_senador")["sq_candidato"])]
 for df in (mun, outros):
-    for c in ["populacao", "pc_principal", "pc_outros", "pct_votos"]:
+    for c in ["populacao", "pc_principal", "pc_outros", "pct_votos", "votos_validos_senador"]:
         if c in df:
             df[c] = df[c].astype(float)
 
@@ -76,20 +85,21 @@ for id_senador, g in mun.groupby("id_senador"):
         continue
     rho, p = spearmanr(g["pc_principal"], g["pct_votos"])
     rho_parcial, p_parcial = parcial(g["pc_principal"], g["pct_votos"], g["populacao"])
+    rho_ponderado = ponderado(g["pc_principal"], g["pct_votos"], g["votos_validos_senador"])
     rho_outros, p_outros = spearmanr(g["pc_outros"], g["pct_votos"])
     x = g.set_index("id_municipio")["pc_principal"]
     rhos_votos = [
         spearmanr(x.loc[o["id_municipio"]], o["pct_votos"])[0]
         for _, o in outros[(outros["id_senador"] == id_senador) & outros["id_municipio"].isin(x.index)].groupby("sq_candidato")
     ]
-    linhas.append((id_senador, len(g), float(rho), float(p), rho_parcial, p_parcial,
+    linhas.append((id_senador, len(g), float(rho), float(p), rho_parcial, p_parcial, rho_ponderado,
                    float(rho_outros), float(p_outros), float(np.nanmedian(rhos_votos)), len(rhos_votos)))
 
 rob = pd.DataFrame(linhas, columns=[
-    "id_senador", "n", "rho", "p_valor", "rho_parcial_pop", "p_parcial_pop",
+    "id_senador", "n", "rho", "p_valor", "rho_parcial_pop", "p_parcial_pop", "rho_ponderado_votos",
     "rho_placebo_emenda_outros", "p_placebo_emenda_outros", "rho_placebo_voto_outros_mediana", "n_outros_candidatos",
 ])
-spark.createDataFrame(rob).write.mode("overwrite").saveAsTable("data_glow_up.gold.robustez_senador")
+spark.createDataFrame(rob).write.mode("overwrite").option("overwriteSchema", "true").saveAsTable("data_glow_up.gold.robustez_senador")
 
 # COMMAND ----------
 
