@@ -40,6 +40,7 @@
     .legenda span { display: inline-flex; align-items: center; gap: 12px; }
     .chave { width: 22px; height: 22px; border-radius: 50%; display: inline-block; }
     .vazado { background: var(--superficie); border: 4px solid var(--serie-1); }
+    .faixa { width: 40px; height: 22px; border-radius: 4px; background: var(--serie-2); opacity: 0.16; display: inline-block; }
     ul { margin: 0; padding-left: 40px; }
     li { font-size: 34px; line-height: 1.4; color: var(--tinta-2); margin-bottom: 26px; }
     li strong { color: var(--tinta); }
@@ -58,8 +59,8 @@
     <div class="numero" data-campo="rs"></div>
     <p class="rotulo">em emendas individuais desses 32 senadores<br>(emendas de 2020 a 2026, pagas até set/2026)</p>
   </div>
-  <p class="seta">arraste para o lado →</p>
-  <div class="rodape"><span>Fontes: Portal da Transparência, TSE, IBGE</span><span>1/6</span></div>
+  <p class="seta" style="margin-bottom: 64px">arraste para o lado →</p>
+  <div class="rodape"><span>Fontes: Base dos Dados (Senado, municípios e população),<br>Portal da Transparência (emendas por favorecido), TSE, IBGE</span><span>1/6</span></div>
 </section>
 
 <section class="slide">
@@ -67,7 +68,7 @@
   <h2>Para cada senador, em cada município do seu estado:</h2>
   <p class="barra-lat"><strong>Emenda per capita:</strong> quanto das emendas individuais dele foi pago ao próprio município
     (prefeitura ou fundo municipal), dividido pela população.</p>
-  <p class="barra-lat"><strong>Voto:</strong> o % dos votos válidos para Senador que ele teve ali no 1º turno de 04/10/2026.</p>
+  <p class="barra-lat"><strong>Voto:</strong> o % dos votos válidos para Senador que ele teve ali no 1º turno de 04/10/2026. Em 2026, cada eleitor votou em 2 senadores.</p>
   <p>E calculamos a correlação entre as duas coisas (ρ de Spearman, de −1 a 1).</p>
   <div style="margin-top: 36px">
     <div class="numero" data-campo="pct"></div>
@@ -79,12 +80,13 @@
 
 <section class="slide">
   <p class="selo">Resultado</p>
-  <h2 style="font-size: 50px"><span data-campo="sig"></span>: relação positiva entre emenda per capita e % de votos no município</h2>
+  <h2 style="font-size: 50px">Em <span data-campo="sig"></span> senadores, a relação é positiva e estatisticamente significativa</h2>
   <div class="legenda">
     <span><span class="chave" style="background: var(--serie-1)"></span>emenda do senador</span>
     <span><span class="chave" style="background: var(--serie-2)"></span>placebo: emenda dos outros</span>
     <span><span class="chave vazado"></span>p ≥ 0,05</span>
   </div>
+  <div class="legenda"><span><span class="faixa"></span>placebo ≥ ρ do senador: a emenda dele não se destaca da dos outros</span></div>
   <div id="g-ranking" class="grafico"></div>
   <div class="rodape"><span>ρ de Spearman · 29 senadores do ranking · p &lt; 0,05 = ponto cheio</span><span>3/6</span></div>
 </section>
@@ -95,7 +97,7 @@
   <p>ρ mediano dos 29 senadores em cada teste:</p>
   <div id="g-robustez" class="grafico"></div>
   <p style="margin-top: 32px">Em alguns senadores, a emenda dos <strong>outros</strong> parlamentares acompanha o voto tanto
-    quanto a dele: ali, a relação parece ser do perfil do município.</p>
+    quanto a dele. Nesses casos, a emenda do senador não se destaca da emenda dos outros.</p>
   <div class="rodape"><span>* referência fraca: os % de um município somam 200%</span><span>4/6</span></div>
 </section>
 
@@ -162,6 +164,10 @@ function ranking_(dados) {
     .attr("fill", css("--tinta-3")).style("font-size", "20px").text(d => num(d, 1));
   const g = svg.append("g").selectAll("g").data(dados).join("g")
     .attr("transform", d => `translate(0,${y(d.id_senador) + y.bandwidth() / 2})`);
+  // Faixa nas linhas em que o placebo (emenda dos outros) é maior ou igual ao ρ do próprio senador
+  g.filter(d => d.rho_placebo_emenda_outros >= d.rho).append("rect")
+    .attr("x", 4).attr("width", w - 8).attr("y", -linha / 2).attr("height", linha).attr("rx", 4)
+    .attr("fill", css("--serie-2")).attr("opacity", 0.16);
   g.append("text").attr("x", m.left - 14).attr("dy", "0.34em").attr("text-anchor", "end")
     .attr("fill", css("--tinta")).style("font-size", "18px").text(d => `${d.nome_parlamentar} (${d.sigla_uf})`);
   g.append("line").attr("x1", d => x(d.rho)).attr("x2", d => x(d.rho_placebo_emenda_outros))

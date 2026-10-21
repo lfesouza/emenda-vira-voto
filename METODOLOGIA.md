@@ -14,6 +14,8 @@ Cada filtro registra: linhas removidas, R$ removidos e motivo.
 ### Observações do perfil exploratório (19/10/2026)
 Emendas individuais 2019–2025 na tabela `br_cgu_emendas_parlamentares.microdados`: R$ 101,75 bi pagos; apenas R$ 10,34 bi (~10%) com município identificado. A base não traz 2026. Detalhes em `docs/fontes.md` (F1).
 
+A tabela de emendas da Base dos Dados foi usada só nesse diagnóstico: como ela identifica o município de destino em apenas ~10% do valor e não cobre 2026, o município passou a vir do arquivo de emendas por favorecido do Portal da Transparência (abaixo).
+
 ### Atribuição de município pelo favorecido (provisório, 20/10/2026)
 Fonte: `EmendasParlamentares_PorFavorecido.csv` (F1b). Critério: a emenda conta para o município **somente quando o favorecido é o próprio ente municipal** — `Natureza Jurídica` em `Município`, `Fundo Público da Administração Direta Municipal` ou `Órgão Público do Poder Executivo Municipal`. Demais favorecidos ficam fora.
 
@@ -69,6 +71,8 @@ Queries de reprodução em `sql/gold/` (rodam sobre o catálogo `data_glow_up`):
 - `02_resumo_cenarios.sql`: por cenário, quantos ρ positivos/negativos com p < 0,05 e ρ mediano.
 - `03_robustez.sql`: medianas e contagens da parcial, ponderada e dos placebos.
 - `04_ranking.sql`: tabela dos 32 com n, ρ, valor-p, testes e motivo de quem fica fora do ranking.
+- `05_municipios.sql`: senador × município (base do mapa e da dispersão da página).
+- `06_resultado_eleitoral.sql`: eleitos e não eleitos entre os senadores com ρ positivo e p < 0,05 (7 de 18 eleitos, 38,9%) e os demais (6 de 11, 54,5%). Diferença não significativa (teste exato de Fisher, p = 0,47, calculado à parte com `scipy.stats.fisher_exact` sobre essa tabela 2×2); não publicada como achado.
 
 ## Pipeline (Databricks, catálogo `data_glow_up`)
 - **Bronze** (`notebooks/01_bronze.sql`): arquivos brutos em Parquet gerados por `ingest/bronze.py` e enviados ao Volume `bronze.arquivos`. Único filtro: a votação TSE entra só com o cargo Senador (74.447 das 6.730.564 linhas do arquivo). Tabelas: `emenda_favorecido` (827.457), `votacao_senador_munzona` (74.447), `municipio` (5.571), `populacao` (191.099), `senador_reeleicao` (32).

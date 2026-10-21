@@ -1,6 +1,6 @@
 # Texto do post (LinkedIn)
 
-Números: `sql/gold/01_totais.sql` (R$ 8,74 bi; 53,1%), `02_resumo_cenarios.sql` e `03_robustez.sql` (18 de 29; nenhum negativo significativo; ρ 0,24 / 0,25 / 0,08; 24 de 29). Anexar `emenda-vira-voto.pdf` como documento. Marcar o Heitor Sasaki manualmente no LinkedIn.
+Números: `sql/gold/01_totais.sql` (R$ 8,74 bi; 53,1%), `02_resumo_cenarios.sql` e `03_robustez.sql` (18 de 29; nenhum negativo significativo; ρ 0,24 / 0,25 / 0,08; 24 de 29 = `proprio_maior_que_placebo`; 5 = `placebo_maior_ou_igual`). Anexar `emenda-vira-voto.pdf` como documento. Marcar o Heitor Sasaki manualmente no LinkedIn.
 
 ---
 
@@ -18,7 +18,7 @@ O que os dados mostram:
 
 → A relação é moderada: ρ de Spearman mediano de 0,24.
 
-→ Ela se mantém quando controlo pelo tamanho do município (0,25). Mas, no teste placebo, trocando a emenda do senador pela dos outros parlamentares, o ρ mediano cai para 0,08. Em 24 dos 29, a emenda do próprio senador acompanha o voto mais do que a dos outros; em alguns, a relação parece ser do perfil do município.
+→ Ela se mantém quando controlo pelo tamanho do município (0,25). Mas, no teste placebo, trocando a emenda do senador pela dos outros parlamentares, o ρ mediano cai para 0,08. Em 24 dos 29, a correlação com a emenda do próprio senador é maior que a correlação com a emenda dos outros parlamentares. Nos outros 5, a emenda dos outros acompanha o voto igual ou mais.
 
 Correlação não é causalidade: a emenda pode ir para onde o senador já tinha voto, e fatores como prefeitos aliados não foram medidos.
 

@@ -29,6 +29,13 @@ Nomes de tabelas e colunas copiados de consultas reais (nunca digitados de memó
 | `QT_VOTOS_NOMINAIS`, `NM_TIPO_DESTINACAO_VOTOS`, `QT_VOTOS_NOMINAIS_VALIDOS` | **Y** (votos) |
 | `CD_SIT_TOT_TURNO`, `DS_SIT_TOT_TURNO` | eleito / não eleito |
 
+## F4b — TSE: candidaturas 2026
+
+- **Arquivo:** `consulta_cand_2026.zip` (usado `consulta_cand_2026_BRASIL.csv`, `;`, latin-1)
+- **URL:** https://cdn.tse.jus.br/estatistica/sead/odsele/consulta_cand/consulta_cand_2026.zip
+- **Checagem em 20/10/2026:** HTTP 200, 3.245.977 bytes, `Last-Modified: Tue, 20 Oct 2026 22:35:28 GMT`
+- **Uso:** casar os senadores do mandato 2019/2027 com as candidaturas a Senador 2026 (`ingest/senadores_reeleicao.py`): colunas `SG_UF`, `DS_CARGO`, `NM_CANDIDATO`, `NM_URNA_CANDIDATO`, `SQ_CANDIDATO`, `DS_OCUPACAO`, `DS_SIT_TOT_TURNO`.
+
 ## Base dos Dados — como os nomes foram obtidos (19/10/2026)
 
 - IDs do BigQuery: API do catálogo (`https://backend.basedosdados.org/graphql`, campo `cloudTables`).

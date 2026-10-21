@@ -10,6 +10,7 @@ SELECT
   ROUND(percentile(r.rho_placebo_emenda_outros, 0.5), 3) AS placebo_emenda_outros_mediano,
   SUM(CASE WHEN r.rho_placebo_emenda_outros > 0 AND r.p_placebo_emenda_outros < 0.05 THEN 1 ELSE 0 END) AS placebo_emenda_outros_positivo_p05,
   SUM(CASE WHEN r.rho > r.rho_placebo_emenda_outros THEN 1 ELSE 0 END) AS proprio_maior_que_placebo,
+  SUM(CASE WHEN r.rho_placebo_emenda_outros >= r.rho THEN 1 ELSE 0 END) AS placebo_maior_ou_igual,
   ROUND(percentile(r.rho_placebo_voto_outros_mediana, 0.5), 3) AS placebo_voto_outros_mediano
 FROM data_glow_up.gold.robustez_senador r
 JOIN data_glow_up.gold.senador_regras s USING (id_senador)
