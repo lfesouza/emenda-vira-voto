@@ -173,7 +173,8 @@ emenda-vira-voto/
 ├── site/                # página estática (GitHub Pages)
 ├── n8n/                 # workflow exportado (.json) + docker-compose.yml
 ├── docs/fontes.md
-└── assets/carrossel/
+├── assets/carrossel/
+└── .github/workflows/   # publicação do site/ no GitHub Pages (20/10/2026)
 ```
 
 ## 11. Cronograma (5 noites × 1–2 h)

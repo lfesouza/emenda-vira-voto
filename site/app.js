@@ -1,5 +1,5 @@
 // Página "Emenda vira voto?": lê os JSON gerados por ingest/exporta_site.py (uma query de sql/gold/ cada).
-const REPO_URL = "https://github.com/"; // trocar pelo endereço do repositório público quando for criado
+const REPO_URL = "https://github.com/lfesouza/emenda-vira-voto";
 
 const fmt = {
   num: (v, casas = 0) => v.toLocaleString("pt-BR", { minimumFractionDigits: casas, maximumFractionDigits: casas }),

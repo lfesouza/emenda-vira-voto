@@ -4,7 +4,7 @@
 
 Análise para o desafio **#DataGlowUp** (dados do Senado): emendas parlamentares individuais (2019–2026) × votação de 2026, município a município, dentro do estado, para os 32 senadores que tentaram a reeleição.
 
-**Status:** em construção — publicação prevista para 24/10/2026.
+**Página:** https://lfesouza.github.io/emenda-vira-voto/ · **Status:** em construção — publicação prevista para 24/10/2026.
 
 Correlação não é causalidade. Fontes, filtros e limitações em [`METODOLOGIA.md`](METODOLOGIA.md); escopo completo em [`PRD.md`](PRD.md).
 
