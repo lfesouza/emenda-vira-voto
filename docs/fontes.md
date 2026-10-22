@@ -128,3 +128,18 @@ Tabelas usadas na análise:
 De-para com o TSE (20/10/2026): `CAST(CD_MUNICIPIO AS INT) = CAST(id_municipio_tse AS INT)` casa os 5.571 municípios da votação para Senador, sem divergência de UF.
 
 Colunas: `id_municipio` STRING (IBGE 7 dígitos), `id_municipio_6` STRING, **`id_municipio_tse` STRING** (de-para com F4), `id_municipio_rf` STRING, `id_municipio_bcb` STRING, `nome` STRING, `capital_uf` INT64, `id_comarca` STRING, `id_regiao_saude` STRING, `nome_regiao_saude` STRING, `id_regiao_imediata` STRING, `nome_regiao_imediata` STRING, `id_regiao_intermediaria` STRING, `nome_regiao_intermediaria` STRING, `id_microrregiao` STRING, `nome_microrregiao` STRING, `id_mesorregiao` STRING, `nome_mesorregiao` STRING, `id_regiao_metropolitana` STRING, `nome_regiao_metropolitana` STRING, `ddd` STRING, `id_uf` STRING, `sigla_uf` STRING, `nome_uf` STRING, `nome_regiao` STRING, `amazonia_legal` INT64, `centroide` GEOGRAPHY
+
+## F7 — TSE: eleição de 2018 (votação e candidaturas)
+
+- **Arquivos:** `votacao_candidato_munzona_2018.zip` (usado `_BRASIL.csv`, 4,0 GB descompactado) e `consulta_cand_2018.zip` (usado `_BRASIL.csv`). CSV `;`, latin-1.
+- **URLs:** https://cdn.tse.jus.br/estatistica/sead/odsele/votacao_candidato_munzona/votacao_candidato_munzona_2018.zip e https://cdn.tse.jus.br/estatistica/sead/odsele/consulta_cand/consulta_cand_2018.zip
+- **Checagem em 21/10/2026:** HTTP 200; votação 395.389.280 bytes, `Last-Modified: Wed, 13 Nov 2024 16:25:44 GMT`; candidaturas 4.722.704 bytes, `Last-Modified: Wed, 13 Nov 2024 16:20:54 GMT`.
+- **Colunas:** mesmas da F4 (votação), exceto `CD_SITUACAO_DIPLOMA`/`DS_SITUACAO_DIPLOMA` no lugar de `CD_SITUACAO_DCONST_DIPLOMA`/`DS_SITUACAO_DCONST_DIPLOMA`; inclui `QT_VOTOS_NOMINAIS_VALIDOS`. Candidaturas: mesmas colunas da F4b, incluindo `NR_CPF_CANDIDATO`.
+- **Atenção:** a votação de 2018 traz também a eleição suplementar para Senador de MT de 2020 (`CD_ELEICAO` = 438, 1.606 linhas); a eleição ordinária é `CD_ELEICAO` = 297.
+- **Uso:** `ingest/bronze_2018.py` casa os 32 senadores com a candidatura de 2018 pelo CPF (`NR_CPF_CANDIDATO` em `consulta_cand_2026` × `consulta_cand_2018`) e extrai a votação com `CD_CARGO` = 5.
+
+## Informação externa: senadores de SP (21/10/2026)
+
+Usada só na frase da página sobre os estados sem senador na análise.
+- **Conferido nos dados do TSE (F4b):** Mara Gabrilli (`MARA CRISTINA GABRILLI`) foi candidata a Deputado Estadual em SP em 2026 (`DS_SIT_TOT_TURNO` = `SUPLENTE`); não há candidatura de Alexandre Giordano em 2026.
+- **Externo, sem tabela no projeto:** Alexandre Giordano, suplente, assumiu a vaga de Major Olímpio, que morreu em 18/03/2021 (Agência Senado, "Senador Major Olimpio morre vítima da covid-19", https://www12.senado.leg.br/noticias/materias/2021/03/18/senador-major-olimpio-morre-vitima-da-covid-19).

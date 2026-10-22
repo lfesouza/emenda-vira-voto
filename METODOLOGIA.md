@@ -55,6 +55,11 @@ Números a reproduzir por query em `sql/gold/` quando a gold existir.
 
 Resultado (análise principal, janela 2020–2026): 32 senadores; 30 com 15+ municípios; 30 com cobertura 20%+; **29 no ranking**. Fora: Leila Barros (DF), Jaques Wagner (cobertura), Chico Rodrigues (mínimo de municípios). Nenhum R$ municipal fora da UF do senador. Tabela completa: `data/senadores_reeleicao.csv` (gerada pelo script).
 
+### Eleição de 2018 (21/10/2026, `ingest/bronze_2018.py` e `notebooks/05_eleicao_2018.py`)
+- Votação TSE 2018, cargo Senador: 78.253 linhas. **Descartadas 1.606 linhas (1.431.699 votos) da eleição suplementar de MT de 2020** (`CD_ELEICAO` = 438): só a eleição ordinária de 07/10/2018 entra. Votos válidos somados por município: 170.093.885, em 5.570 municípios (Boa Esperança do Norte/MT não existia em 2018), sem perda no de-para TSE → IBGE.
+- Casamento pelo CPF: os 32 têm candidatura em 2018. 31 foram candidatos a Senador titular na eleição ordinária. **Carlos Portinho (RJ) foi 1º suplente** em 2018, sem votos próprios: fica fora das correlações de 2018 (28 dos 29 do ranking entram). Carlos Fávaro (MT) entra com a candidatura de 2018 (não eleito); a de 2020 (suplementar, eleito) fica fora. Eduardo Gomes (TO) tem também uma candidatura a 1º suplente inapta em 2018, ignorada.
+- Y 2018 = % dos votos válidos para Senador no município, mesma fórmula de 2026 (nas duas eleições o eleitor deu dois votos). Variação = % 2026 − % 2018, em pontos percentuais. X = emenda per capita do cenário principal (a mesma de 2026). n = municípios com voto nas duas eleições; difere do n de 2026 só em Fávaro (141 × 142).
+
 ## Fórmulas
 - **Votos (Y)** = votos nominais válidos do senador no município ÷ votos nominais válidos de todos os candidatos a Senador no município (`QT_VOTOS_NOMINAIS_VALIDOS`, zonas somadas, 1º turno). Ficam fora do denominador os votos `Anulado` (25.284) e `Anulado sub judice` (364.824). Em 2026 cada eleitor votou em 2 senadores, então a soma dos percentuais de todos os candidatos de um município é 200%.
 - **População:** estimativa IBGE de 2025 (`br_ibge_populacao.municipio`, ano mais recente disponível; 5.571 municípios, 213.421.037 habitantes). **Correção de fonte (20/10/2026):** em 2025 a tabela tem 1 linha sem `id_municipio` e sem `sigla_uf` (5.877 hab.), e Boa Esperança do Norte/MT (5101837), município novo, é o único do diretório sem população. A linha foi atribuída a ele no silver (5.804 votos válidos para Senador no município; R$ 349.989 em emendas de um dos 32). Nenhuma linha ou R$ descartado.
@@ -72,6 +77,10 @@ Queries de reprodução em `sql/gold/` (rodam sobre o catálogo `data_glow_up`):
 - `03_robustez.sql`: medianas e contagens da parcial, ponderada e dos placebos.
 - `04_ranking.sql`: tabela dos 32 com n, ρ, valor-p, testes e motivo de quem fica fora do ranking.
 - `05_municipios.sql`: senador × município (base do mapa e da dispersão da página).
+- `07_eleicao_2018.sql`: por senador do ranking, ρ(emenda per capita × % dos votos 2018) e ρ(emenda per capita × variação do % 2018→2026), com n e valor-p, ao lado do ρ de 2026.
+- `08_resumo_2018.sql`: resumo da eleição de 2018 (28 senadores).
+- `09_casos_concretos.sql`: para os 3 senadores com maior ρ, o município com maior emenda per capita entre os com mais de 10 mil habitantes.
+- `10_ufs_sem_senador.sql`: UFs sem nenhum dos 32 (PR, RO, RS, SP).
 - `06_resultado_eleitoral.sql`: eleitos e não eleitos entre os senadores com ρ positivo e p < 0,05 (7 de 18 eleitos, 38,9%) e os demais (6 de 11, 54,5%). Diferença não significativa (teste exato de Fisher, p = 0,47, calculado à parte com `scipy.stats.fisher_exact` sobre essa tabela 2×2); não publicada como achado.
 
 ## Pipeline (Databricks, catálogo `data_glow_up`)

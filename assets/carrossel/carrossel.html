@@ -46,6 +46,15 @@
     li strong { color: var(--tinta); }
     .link { font-size: 38px; color: var(--serie-1); font-weight: 600; word-break: break-all; margin: 0 0 12px; }
     .seta { font-size: 30px; color: var(--tinta-3); margin-top: auto; }
+    .caso { background: var(--superficie); border: 2px solid var(--borda); border-radius: 16px; padding: 18px 32px; margin-bottom: 16px; }
+    .caso h3 { font-size: 30px; margin: 0 0 4px; }
+    .caso .meta { font-size: 22px; color: var(--tinta-3); margin: 0 0 12px; }
+    .caso .mun { font-size: 30px; color: var(--tinta); margin: 0 0 10px; }
+    .caso .mun span { font-size: 24px; color: var(--tinta-2); }
+    .caso .valores { display: flex; gap: 56px; align-items: baseline; }
+    .caso .valores div { font-size: 24px; color: var(--tinta-2); }
+    .caso .valores strong { display: block; font-size: 42px; line-height: 1.1; color: var(--tinta); }
+    .caso .obs { font-size: 22px; color: var(--tinta-2); margin: 12px 0 0; line-height: 1.35; }
   </style>
 </head>
 <body>
@@ -60,7 +69,7 @@
     <p class="rotulo">em emendas individuais desses 32 senadores<br>(emendas de 2020 a 2026, pagas até set/2026)</p>
   </div>
   <p class="seta" style="margin-bottom: 64px">arraste para o lado →</p>
-  <div class="rodape"><span>Fontes: Base dos Dados (Senado, municípios e população),<br>Portal da Transparência (emendas por favorecido), TSE, IBGE</span><span>1/6</span></div>
+  <div class="rodape"><span>Fontes: Base dos Dados (Senado, municípios e população),<br>Portal da Transparência (emendas por favorecido), TSE, IBGE</span><span>1/9</span></div>
 </section>
 
 <section class="slide">
@@ -75,7 +84,7 @@
     <p class="rotulo">do valor foi pago a um município identificável. O resto (governo estadual, Banco do Brasil como
       intermediário, entidades) não entra na comparação.</p>
   </div>
-  <div class="rodape"><span>Emenda vira voto?</span><span>2/6</span></div>
+  <div class="rodape"><span>Emenda vira voto?</span><span>2/9</span></div>
 </section>
 
 <section class="slide">
@@ -88,7 +97,14 @@
   </div>
   <div class="legenda"><span><span class="faixa"></span>placebo ≥ ρ do senador: a emenda dele não se destaca da dos outros</span></div>
   <div id="g-ranking" class="grafico"></div>
-  <div class="rodape"><span>ρ de Spearman · 29 senadores do ranking · p &lt; 0,05 = ponto cheio</span><span>3/6</span></div>
+  <div class="rodape"><span>ρ de Spearman · 29 senadores do ranking · p &lt; 0,05 = ponto cheio</span><span>3/9</span></div>
+</section>
+
+<section class="slide">
+  <p class="selo">Casos concretos</p>
+  <h2 style="font-size: 46px; margin-bottom: 28px">Nos 3 senadores com maior ρ, o município que mais recebeu por habitante</h2>
+  <div id="casos"></div>
+  <div class="rodape"><span>Regra: entre os municípios com mais de 10 mil hab. (IBGE 2025), o de maior emenda per capita.<br>Emendas individuais 2020–2026 pagas até set/2026 · % dos votos válidos para Senador</span><span>4/9</span></div>
 </section>
 
 <section class="slide">
@@ -98,7 +114,16 @@
   <div id="g-robustez" class="grafico"></div>
   <p style="margin-top: 32px">Em alguns senadores, a emenda dos <strong>outros</strong> parlamentares acompanha o voto tanto
     quanto a dele. Nesses casos, a emenda do senador não se destaca da emenda dos outros.</p>
-  <div class="rodape"><span>* referência fraca: os % de um município somam 200%</span><span>4/6</span></div>
+  <div class="rodape"><span>* referência fraca: os % de um município somam 200%</span><span>5/9</span></div>
+</section>
+
+<section class="slide">
+  <p class="selo">Eleição de 2018</p>
+  <h2>E antes das emendas?</h2>
+  <p>ρ mediano da emenda per capita (2020–2026) com o voto de cada senador:</p>
+  <div id="g-2018" class="grafico"></div>
+  <p class="grande barra-lat" style="margin-top: 48px" data-campo="var2018"></p>
+  <div class="rodape"><span><span data-campo="n2018"></span> senadores (Portinho sem votos próprios em 2018) · variação em pontos percentuais<br><span data-campo="nota2018"></span></span><span>6/9</span></div>
 </section>
 
 <section class="slide">
@@ -109,9 +134,18 @@
     <li><strong>Outros fatores:</strong> prefeitos aliados e o efeito de quem já está no cargo não foram medidos.</li>
     <li><strong><span data-campo="sem"></span> do valor</strong> não tem município identificado e fica de fora.</li>
     <li><strong>A relação é moderada</strong> (ρ mediano <span data-campo="med"></span>) e não aparece para todos.</li>
+    <li>Alianças com prefeitos e mudanças regionais entre 2018 e 2026 podem explicar parte da relação.</li>
     <li>Ficam fora do ranking: DF (um só município) e 2 senadores abaixo das regras mínimas.</li>
   </ul>
-  <div class="rodape"><span>Emenda vira voto?</span><span>5/6</span></div>
+  <div class="rodape"><span>Emenda vira voto?</span><span>7/9</span></div>
+</section>
+
+<section class="slide">
+  <p class="selo">Conclusão</p>
+  <h2>Resposta curta: em parte dos senadores, emenda e voto andam juntos.</h2>
+  <p class="grande">E não é só porque a emenda foi para onde ele já era forte: em 2018, antes dessas emendas, essa relação quase não existia.</p>
+  <p class="grande barra-lat"><strong>Ainda assim, os dados mostram associação, não que a emenda trouxe os votos.</strong></p>
+  <div class="rodape"><span>Emenda vira voto?</span><span>8/9</span></div>
 </section>
 
 <section class="slide">
@@ -122,7 +156,7 @@
   <h2>Código, consultas e metodologia</h2>
   <p class="link">github.com/lfesouza/emenda-vira-voto</p>
   <p>Cada número tem uma consulta SQL que o reproduz. Pipeline em Python + Databricks.</p>
-  <div class="rodape"><span>#DataGlowUp</span><span>6/6</span></div>
+  <div class="rodape"><span>#DataGlowUp</span><span>9/9</span></div>
 </section>
 
 <script>
@@ -134,18 +168,35 @@ if (so) {
 const num = (v, c = 0) => v.toLocaleString("pt-BR", { minimumFractionDigits: c, maximumFractionDigits: c });
 const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
 
-Promise.all(["01_totais", "03_robustez", "04_ranking"].map(n => d3.json(`../../site/data/${n}.json`)))
-  .then(([[t], [r], ranking]) => {
+Promise.all(["01_totais", "03_robustez", "04_ranking", "08_resumo_2018", "09_casos_concretos"].map(n => d3.json(`../../site/data/${n}.json`)))
+  .then(([[t], [r], ranking, [e], casos]) => {
     const campos = {
       rs: `R$ ${num(t.rs_individual_bi, 2)} bi`,
       pct: `${num(t.pct_com_municipio, 1)}%`,
       sem: `${num(t.pct_sem_municipio, 1)}%`,
       sig: `${r.rho_positivo_p05} de ${r.senadores}`,
       med: num(r.rho_mediano, 2),
+      var2018: `Em ${e.variacao_positivo_p05} de ${e.senadores}, onde chegou mais emenda, o voto cresceu mais; ` +
+        (e.variacao_negativo_p05 === 0 ? "nenhum mostra o contrário." : `${e.variacao_negativo_p05} mostram o contrário.`),
+      n2018: e.senadores,
+      nota2018: `${e.variacao_positivo_p05} de ${e.senadores} = ρ(emenda × variação) positivo com p < 0,05; ` +
+        `${e.variacao_negativo_p05 === 0 ? "nenhum" : e.variacao_negativo_p05} negativo com p < 0,05`,
     };
     document.querySelectorAll("[data-campo]").forEach(el => { el.textContent = campos[el.dataset.campo]; });
     ranking_(ranking.filter(s => s.no_ranking).sort((a, b) => b.rho - a.rho));
-    robustez(r);
+    barras("#g-robustez", [
+      ["Original", r.rho_mediano, false],
+      ["Controlando pela população", r.parcial_pop_mediano, false],
+      ["Ponderado pelos votos válidos", r.ponderado_votos_mediano, false],
+      ["Placebo: emenda dos outros", r.placebo_emenda_outros_mediano, true],
+      ["Placebo: voto dos outros*", r.placebo_voto_outros_mediano, true],
+    ], [-0.15, 0.3]);
+    barras("#g-2018", [
+      ["Emenda × voto 2018", e.rho_voto_2018_mediano, false],
+      ["Emenda × variação 2018→2026", e.rho_variacao_mediano, false],
+      ["Emenda × voto 2026", e.rho_2026_mediano_mesmos, false],
+    ], [0, 0.3]);
+    casos_(casos);
     document.body.dataset.pronto = "1";
   });
 
@@ -179,18 +230,24 @@ function ranking_(dados) {
     .attr("stroke", css("--serie-1")).attr("stroke-width", 3.5);
 }
 
-function robustez(r) {
-  const dados = [
-    ["Original", r.rho_mediano, false],
-    ["Controlando pela população", r.parcial_pop_mediano, false],
-    ["Ponderado pelos votos válidos", r.ponderado_votos_mediano, false],
-    ["Placebo: emenda dos outros", r.placebo_emenda_outros_mediano, true],
-    ["Placebo: voto dos outros*", r.placebo_voto_outros_mediano, true],
-  ];
+function casos_(dados) {
+  d3.select("#casos").selectAll("div").data(dados).join("div").attr("class", "caso").html(d => `
+    <h3>${d.nome_parlamentar} (${d.sigla_uf})</h3>
+    <p class="meta">ρ ${num(d.rho, 2)} · n = ${d.n} municípios · p ${d.p_valor < 0.001 ? "< 0,001" : "= " + num(d.p_valor, 3)}</p>
+    <p class="mun"><strong>${d.municipio}</strong> <span>· ${num(d.populacao)} habitantes</span></p>
+    <div class="valores">
+      <div><strong>R$ ${num(d.rs_por_habitante, 2)}</strong>por habitante</div>
+      <div><strong>${num(d.pct_votos_2026, 1)}%</strong>dos votos válidos</div>
+    </div>
+    ${d.nome_parlamentar === "Sérgio Petecão" ? `<p class="obs">No caso dele, a emenda dos outros parlamentares acompanha o voto quase na mesma medida
+      (ρ ${num(d.rho_placebo_emenda_outros, 2)} contra ${num(d.rho, 2)}).</p>` : ""}`);
+}
+
+function barras(alvo, dados, dominio) {
   const w = 888, passo = 76, barra = 40, m = { top: 16, right: 80, bottom: 16, left: 380 };
   const h = m.top + m.bottom + passo * dados.length;
-  const x = d3.scaleLinear().domain([-0.15, 0.3]).range([m.left, w - m.right]);
-  const svg = d3.select("#g-robustez").append("svg").attr("viewBox", `0 0 ${w} ${h}`);
+  const x = d3.scaleLinear().domain(dominio).range([m.left, w - m.right]);
+  const svg = d3.select(alvo).append("svg").attr("viewBox", `0 0 ${w} ${h}`);
   const g = svg.append("g").selectAll("g").data(dados).join("g")
     .attr("transform", (d, i) => `translate(0,${m.top + i * passo + passo / 2})`);
   g.append("text").attr("x", m.left - 16).attr("dy", "0.34em").attr("text-anchor", "end")

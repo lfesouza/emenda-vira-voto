@@ -1,6 +1,6 @@
 # Texto do post (LinkedIn)
 
-Números: `sql/gold/01_totais.sql` (R$ 8,74 bi; 53,1%), `02_resumo_cenarios.sql` e `03_robustez.sql` (18 de 29; nenhum negativo significativo; ρ 0,24 / 0,25 / 0,08; 24 de 29 = `proprio_maior_que_placebo`; 5 = `placebo_maior_ou_igual`). Anexar `emenda-vira-voto.pdf` como documento. Marcar o Heitor Sasaki manualmente no LinkedIn.
+Números: `sql/gold/01_totais.sql` (R$ 8,74 bi; 53,1%), `02_resumo_cenarios.sql` e `03_robustez.sql` (18 de 29; nenhum negativo significativo; ρ 0,24 / 0,25 / 0,08; 24 de 29 = `proprio_maior_que_placebo`; 5 = `placebo_maior_ou_igual`); conclusão: `08_resumo_2018.sql` (ρ mediano 0,06 com o voto de 2018; 4 de 28 com ρ > 0 e p < 0,05). Anexar `emenda-vira-voto.pdf` como documento. Marcar o Heitor Sasaki manualmente no LinkedIn.
 
 ---
 
@@ -21,6 +21,8 @@ O que os dados mostram:
 → Ela se mantém quando controlo pelo tamanho do município (0,25). Mas, no teste placebo, trocando a emenda do senador pela dos outros parlamentares, o ρ mediano cai para 0,08. Em 24 dos 29, a correlação com a emenda do próprio senador é maior que a correlação com a emenda dos outros parlamentares. Nos outros 5, a emenda dos outros acompanha o voto igual ou mais.
 
 Correlação não é causalidade: a emenda pode ir para onde o senador já tinha voto, e fatores como prefeitos aliados não foram medidos.
+
+Resposta curta: em parte dos senadores, emenda e voto andam juntos. E não é só porque a emenda foi para onde ele já era forte: em 2018, antes dessas emendas, essa relação quase não existia. Ainda assim, os dados mostram associação, não que a emenda trouxe os votos.
 
 Escolha o senador e veja o mapa: https://lfesouza.github.io/emenda-vira-voto/
 Código, consultas SQL e metodologia: https://github.com/lfesouza/emenda-vira-voto
