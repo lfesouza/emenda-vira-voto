@@ -1,0 +1,24 @@
+# n8n para o "Radar do Senado" (PRD seção 9). Referência para quem quiser reproduzir:
+# na máquina do Luis o workflow roda no n8n que já existia, com esta mesma versão e estas variáveis.
+#
+# Uso (dentro da pasta n8n/):
+#   1. Criar n8n/.env (não versionado) com a linha TELEGRAM_CHAT_ID=<id do seu chat com o bot>
+#   2. docker compose up -d      → abre em http://localhost:5678
+#   3. No n8n: Workflows > Import from file > radar_senado.json; criar a credencial do Telegram
+#      com o nome "Telegram Radar do Senado" (token do @BotFather).
+services:
+  n8n:
+    image: n8nio/n8n:2.42.5
+    ports:
+      - "5678:5678"
+    environment:
+      - GENERIC_TIMEZONE=America/Sao_Paulo
+      - TZ=America/Sao_Paulo
+      - N8N_RUNNERS_ENABLED=true
+      # O workflow lê o chat do Telegram em $env.TELEGRAM_CHAT_ID
+      - N8N_BLOCK_ENV_ACCESS_IN_NODE=false
+      - TELEGRAM_CHAT_ID=${TELEGRAM_CHAT_ID}
+    volumes:
+      # Dados locais do n8n (credenciais criptografadas): fora do git (.gitignore: n8n/data/)
+      - ./data:/home/node/.n8n
+    restart: unless-stopped

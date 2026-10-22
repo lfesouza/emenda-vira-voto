@@ -129,7 +129,7 @@ De-para com o TSE (20/10/2026): `CAST(CD_MUNICIPIO AS INT) = CAST(id_municipio_t
 
 Colunas: `id_municipio` STRING (IBGE 7 dígitos), `id_municipio_6` STRING, **`id_municipio_tse` STRING** (de-para com F4), `id_municipio_rf` STRING, `id_municipio_bcb` STRING, `nome` STRING, `capital_uf` INT64, `id_comarca` STRING, `id_regiao_saude` STRING, `nome_regiao_saude` STRING, `id_regiao_imediata` STRING, `nome_regiao_imediata` STRING, `id_regiao_intermediaria` STRING, `nome_regiao_intermediaria` STRING, `id_microrregiao` STRING, `nome_microrregiao` STRING, `id_mesorregiao` STRING, `nome_mesorregiao` STRING, `id_regiao_metropolitana` STRING, `nome_regiao_metropolitana` STRING, `ddd` STRING, `id_uf` STRING, `sigla_uf` STRING, `nome_uf` STRING, `nome_regiao` STRING, `amazonia_legal` INT64, `centroide` GEOGRAPHY
 
-## F7 — TSE: eleição de 2018 (votação e candidaturas)
+## F4c — TSE: eleição de 2018 (votação e candidaturas)
 
 - **Arquivos:** `votacao_candidato_munzona_2018.zip` (usado `_BRASIL.csv`, 4,0 GB descompactado) e `consulta_cand_2018.zip` (usado `_BRASIL.csv`). CSV `;`, latin-1.
 - **URLs:** https://cdn.tse.jus.br/estatistica/sead/odsele/votacao_candidato_munzona/votacao_candidato_munzona_2018.zip e https://cdn.tse.jus.br/estatistica/sead/odsele/consulta_cand/consulta_cand_2018.zip
@@ -143,3 +143,18 @@ Colunas: `id_municipio` STRING (IBGE 7 dígitos), `id_municipio_6` STRING, **`id
 Usada só na frase da página sobre os estados sem senador na análise.
 - **Conferido nos dados do TSE (F4b):** Mara Gabrilli (`MARA CRISTINA GABRILLI`) foi candidata a Deputado Estadual em SP em 2026 (`DS_SIT_TOT_TURNO` = `SUPLENTE`); não há candidatura de Alexandre Giordano em 2026.
 - **Externo, sem tabela no projeto:** Alexandre Giordano, suplente, assumiu a vaga de Major Olímpio, que morreu em 18/03/2021 (Agência Senado, "Senador Major Olimpio morre vítima da covid-19", https://www12.senado.leg.br/noticias/materias/2021/03/18/senador-major-olimpio-morre-vitima-da-covid-19).
+
+## F7 — APIs de dados abertos do Senado (automação "Radar do Senado", 21/10/2026)
+
+Consultadas pelo n8n a cada execução (`n8n/radar_senado.json`); nada é gravado no repositório.
+
+**Votações:** `GET https://legis.senado.leg.br/dadosabertos/votacao?dataInicio=AAAA-MM-DD&dataFim=AAAA-MM-DD` com `Accept: application/json` (HTTP 200). Lista de votações nominais do Plenário.
+- Campos usados: `dataSessao`, `identificacao` (ex.: `PEC 221/2019`), `descricaoVotacao`, `codigoMateria`, `votacaoSecreta` (`S`/`N`), `totalVotosSim`, `totalVotosNao`, `totalVotosAbstencao`, `votos` (lista com `codigoParlamentar`, `nomeParlamentar`, `siglaPartidoParlamentar`, `siglaUFParlamentar`, `siglaVotoParlamentar`).
+- Perfil de 2026 (01/01 a 18/10): 62 votações; `votacaoSecreta` = `S` em 40. Os totais vêm preenchidos só nas secretas, em que cada voto individual aparece como `Votou`. Nas abertas, os totais são nulos e Sim/Não/Abstenção são contados em `votos`. Outros valores de `siglaVotoParlamentar` (presença e afastamentos: `P-NRV`, `AP`, `LS`, `MIS`, `NCom`, `NA`, `LP`, `LAP`, `Presidente (art. 51 RISF)`) não entram nas contagens.
+- `resultadoVotacao` (`A` em 59, `R` em 3) não tem dicionário consultado: não é usado no boletim.
+- Link da matéria: `https://www25.senado.leg.br/web/atividade/materias/-/materia/<codigoMateria>` (HTTP 200 conferido).
+
+**CEAPS (cota parlamentar):** `GET https://adm.senado.gov.br/adm-dadosabertos/api/v1/senadores/despesas_ceaps/<ano>` (HTTP 200), um arquivo por ano de competência.
+- Campos: `id`, `tipoDocumento`, `ano`, `mes`, `codSenador`, `nomeSenador`, `tipoDespesa` (8 tipos), `cpfCnpj`, `fornecedor`, `documento`, `data`, `detalhamento`, `valorReembolsado`. O boletim não publica `cpfCnpj` nem `fornecedor`.
+- Perfil (21/10/2026): 2025 com 23.826 linhas, 2026 com 15.826 (competência até 10/2026).
+- **Atenção:** `data` (data do documento) tem valores fora do ano de competência (ex.: `0202-02-24` no arquivo de 2025, `2006-07-17` e `2026-12-29` em outros). Em 2024–2026 são 848 lançamentos. O histórico usa `ano`/`mes`; `data` só define a semana.

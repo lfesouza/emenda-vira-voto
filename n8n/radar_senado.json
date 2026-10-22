@@ -1,0 +1,263 @@
+{
+  "id": "RadarSenado00001",
+  "name": "Radar do Senado",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "weeks",
+              "triggerAtDay": [
+                1
+              ],
+              "triggerAtHour": 8
+            }
+          ]
+        }
+      },
+      "id": "d9e376a6-38e4-51d9-bfc0-5fb3ca7ade41",
+      "name": "Toda segunda, 8h",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "3c1be63d-b173-5777-b7d1-c6998ee30319",
+      "name": "Teste manual",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        200
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Semana anterior (segunda a domingo) no fuso de Brasília e os anos de competência que cobrem os últimos 24 meses\nconst hoje = DateTime.now().setZone('America/Sao_Paulo').startOf('day');\nconst inicio = hoje.startOf('week').minus({ weeks: 1 });\nconst fim = inicio.plus({ days: 6 });\nconst anos = [...new Set([24, 12, 0].map(m => fim.minus({ months: m }).year))];\nreturn [{ json: { inicio: inicio.toISODate(), fim: fim.toISODate(), anos } }];\n"
+      },
+      "id": "9d1583e0-3a93-5776-9964-3118c7c84db4",
+      "name": "Semana",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        240,
+        100
+      ]
+    },
+    {
+      "parameters": {
+        "url": "https://legis.senado.leg.br/dadosabertos/votacao",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "dataInicio",
+              "value": "={{ $json.inicio }}"
+            },
+            {
+              "name": "dataFim",
+              "value": "={{ $json.fim }}"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Accept",
+              "value": "application/json"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "d0ccd5cd-4446-55de-b843-61eba0997554",
+      "name": "Votações da semana",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        480,
+        100
+      ],
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "jsCode": "// Boletim do Radar do Senado: votações nominais da semana + despesas da CEAPS acima do padrão do próprio senador.\n// Entrada: itens do nó \"Votações da semana\" e o período do nó \"Semana\". Texto montado por modelo fixo (sem LLM).\nconst { inicio, fim, anos } = $('Semana').first().json;\nconst URL_CEAPS = ano => `https://adm.senado.gov.br/adm-dadosabertos/api/v1/senadores/despesas_ceaps/${ano}`;\nconst br = iso => iso.split('-').reverse().join('/');\nconst rs = v => 'R$ ' + v.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });\n\n// Quartil com interpolação linear (igual ao QUARTIL.INC do Excel)\nfunction quartil(ordenados, q) {\n  const pos = (ordenados.length - 1) * q;\n  const base = Math.floor(pos);\n  const resto = pos - base;\n  return ordenados[base + 1] !== undefined ? ordenados[base] + resto * (ordenados[base + 1] - ordenados[base]) : ordenados[base];\n}\n\n// 1. Votações nominais: votação secreta traz os totais; votação aberta traz o voto de cada senador\nconst votacoes = $input.all().map(i => i.json).filter(v => v.identificacao).map(v => {\n  const conta = sigla => (v.votos || []).filter(x => x.siglaVotoParlamentar === sigla).length;\n  const secreta = v.votacaoSecreta === 'S';\n  return {\n    data: v.dataSessao,\n    identificacao: v.identificacao,\n    descricao: v.descricaoVotacao,\n    secreta,\n    sim: secreta ? v.totalVotosSim : conta('Sim'),\n    nao: secreta ? v.totalVotosNao : conta('Não'),\n    abstencao: secreta ? v.totalVotosAbstencao : conta('Abstenção'),\n    link: `https://www25.senado.leg.br/web/atividade/materias/-/materia/${v.codigoMateria}`,\n  };\n});\n\n// 2. CEAPS dos anos de competência que cobrem os últimos 24 meses\nconst despesas = [];\nfor (const ano of anos) {\n  despesas.push(...(await this.helpers.httpRequest({ url: URL_CEAPS(ano), json: true })));\n}\n// Datas do documento fora do ano de competência (ex.: 0202, 2006): o histórico usa ano/mês de competência\nconst dataForaDoAno = despesas.filter(d => !d.data || Number(d.data.slice(0, 4)) !== d.ano).length;\n\n// 3. Semana = data do documento entre segunda e domingo; histórico = 24 meses de competência até o mês de \"fim\"\nconst semana = despesas.filter(d => d.data && d.data >= inicio && d.data <= fim);\nconst idsSemana = new Set(semana.map(d => d.id));\nconst mesFim = Number(fim.slice(0, 4)) * 12 + Number(fim.slice(5, 7));\nconst historico = new Map();\nfor (const d of despesas) {\n  const mes = d.ano * 12 + d.mes;\n  if (idsSemana.has(d.id) || mes > mesFim || mes <= mesFim - 24) continue;\n  const chave = `${d.codSenador}|${d.tipoDespesa}`;\n  if (!historico.has(chave)) historico.set(chave, []);\n  historico.get(chave).push(d.valorReembolsado);\n}\n\nconst acima = [];\nlet semHistorico = 0;\nfor (const d of semana) {\n  const h = (historico.get(`${d.codSenador}|${d.tipoDespesa}`) || []).sort((a, b) => a - b);\n  if (h.length < 12) { semHistorico++; continue; }\n  const q1 = quartil(h, 0.25), q3 = quartil(h, 0.75);\n  const referencia = q3 + 3 * (q3 - q1);\n  if (d.valorReembolsado > referencia) {\n    acima.push({ id: d.id, data: d.data, senador: d.nomeSenador, tipo: d.tipoDespesa.trim(), valor: d.valorReembolsado, referencia, n_historico: h.length, fonte: URL_CEAPS(d.ano) });\n  }\n}\nacima.sort((a, b) => b.valor - a.valor);\n\n// 4. Texto (limite de 4.096 caracteres por mensagem no Telegram)\nconst linhas = [`Radar do Senado — semana de ${br(inicio)} a ${br(fim)}`, '', `Votações nominais no Plenário: ${votacoes.length}`];\nif (!votacoes.length) linhas.push('Sem votações nominais na semana.');\nfor (const v of votacoes) {\n  linhas.push(`• ${br(v.data).slice(0, 5)} · ${v.identificacao} — ${v.descricao.slice(0, 110)}${v.descricao.length > 110 ? '…' : ''}`,\n    `  Sim ${v.sim} · Não ${v.nao} · Abstenção ${v.abstencao}${v.secreta ? ' · votação secreta' : ''}`, `  ${v.link}`);\n}\nconst totalSemana = semana.reduce((s, d) => s + d.valorReembolsado, 0);\nlinhas.push('', `Cota parlamentar (CEAPS): ${semana.length} lançamentos com data do documento na semana, ${rs(totalSemana)}.`,\n  `Acima da referência estatística do próprio histórico (Q3 + 3×IQR, mesmo senador e tipo de despesa, 24 meses, mínimo de 12 lançamentos): ${acima.length}. Ficar acima da referência não indica irregularidade.`);\nconst rodape = ['', `Não avaliados (menos de 12 lançamentos no histórico): ${semHistorico}.`,\n  `Fonte: ${anos.map(URL_CEAPS).join(' ; ')}`,\n  `Nota: ${dataForaDoAno} lançamentos dos arquivos têm data do documento fora do ano de competência; o histórico usa ano/mês de competência. Despesas com data na semana que forem lançadas depois não entram neste boletim.`];\nlet listados = 0;\nfor (const a of acima) {\n  const item = `• ${a.senador} — ${a.tipo.split(',')[0].slice(0, 60)} — ${rs(a.valor)} em ${br(a.data)} (referência ${rs(a.referencia)}; ${a.n_historico} lançamentos no histórico)`;\n  if ([...linhas, item, ...rodape].join('\\n').length > 3900) break;\n  linhas.push(item);\n  listados++;\n}\nif (listados < acima.length) linhas.push(`• e mais ${acima.length - listados} (lista completa no JSON da execução)`);\nconst texto = [...linhas, ...rodape].join('\\n');\n// O nó do Telegram envia em Markdown: _ * ` [ precisam de escape (ex.: despesas_ceaps nas URLs)\nconst texto_telegram = texto.replace(/([_*`[])/g, '\\\\$1');\n\nreturn [{ json: { inicio, fim, votacoes, ceaps: { lancamentos_semana: semana.length, total_semana: totalSemana, acima_da_referencia: acima, nao_avaliados: semHistorico, data_fora_do_ano: dataForaDoAno }, texto, texto_telegram } }];\n"
+      },
+      "id": "35ac4b99-e899-5d23-b74a-dbd463b0f2de",
+      "name": "Boletim",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        720,
+        100
+      ]
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $env.TELEGRAM_CHAT_ID }}",
+        "text": "={{ $json.texto_telegram }}\n\nAprovar ou descartar (no PC): {{ $execution.resumeFormUrl }}",
+        "additionalFields": {
+          "appendAttribution": false,
+          "disable_web_page_preview": true
+        }
+      },
+      "id": "992d122b-626e-516f-8da2-3c807e1743de",
+      "name": "Rascunho no Telegram",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        960,
+        100
+      ],
+      "credentials": {
+        "telegramApi": {
+          "name": "Telegram Radar do Senado"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resume": "form",
+        "formTitle": "Radar do Senado",
+        "formDescription": "Boletim enviado ao Telegram. Aprovar ou descartar?",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Decisão",
+              "fieldType": "dropdown",
+              "requiredField": true,
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "Aprovar"
+                  },
+                  {
+                    "option": "Descartar"
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "limitWaitTime": true,
+        "limitType": "afterTimeInterval",
+        "resumeAmount": 2,
+        "resumeUnit": "days",
+        "options": {}
+      },
+      "id": "b65e44d0-3254-5b9f-a411-bbddfd1a8b0f",
+      "name": "Aprovação (formulário)",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        1200,
+        100
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Registra a decisão. Envio para destino público: próxima etapa (por enquanto, só o Telegram do Luis).\n// Sem resposta em 2 dias, o formulário expira e a decisão fica vazia (não aprovado).\nconst semana = $('Semana').first().json;\nreturn [{ json: { inicio: semana.inicio, fim: semana.fim, decisao: $json['Decisão'] ?? null, aprovado: $json['Decisão'] === 'Aprovar' } }];\n"
+      },
+      "id": "cf34dfc8-d849-574e-878a-0ba4dbcf5ea5",
+      "name": "Decisão",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1440,
+        100
+      ]
+    }
+  ],
+  "connections": {
+    "Semana": {
+      "main": [
+        [
+          {
+            "node": "Votações da semana",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Votações da semana": {
+      "main": [
+        [
+          {
+            "node": "Boletim",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Boletim": {
+      "main": [
+        [
+          {
+            "node": "Rascunho no Telegram",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Rascunho no Telegram": {
+      "main": [
+        [
+          {
+            "node": "Aprovação (formulário)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aprovação (formulário)": {
+      "main": [
+        [
+          {
+            "node": "Decisão",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Toda segunda, 8h": {
+      "main": [
+        [
+          {
+            "node": "Semana",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Teste manual": {
+      "main": [
+        [
+          {
+            "node": "Semana",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "America/Sao_Paulo"
+  },
+  "pinData": {}
+}

@@ -159,6 +159,16 @@ Toda tabela gold tem uma query de reprodução versionada em `sql/gold/`.
 
 **Limitações conhecidas:** roda só com a máquina ligada; semanas sem votação geram boletim curto ("sem votações nominais").
 
+**Decisões do Luis (21/10/2026):**
+- **Texto por modelo fixo, sem LLM, na v1.** O passo 4 vira frases prontas montadas no nó Code a partir do JSON, sem risco de alucinação. LLM fica para depois.
+- **Destino:** só o Telegram privado do Luis. Aprovar apenas registra a decisão; canal público ou e-mail ficam para uma etapa seguinte.
+- **Onde roda:** no n8n que já existe na máquina (container `n8n`, 2.42.5), com um bot do Telegram próprio do Radar.
+- **"Despesa nova da semana"** = data do documento (`data`) entre segunda e domingo da semana anterior. Despesas lançadas depois não entram em nenhum boletim (declarado no rodapé).
+- **Histórico de 24 meses** pelo ano/mês de competência (`ano`/`mes`), porque `data` tem valores impossíveis (ex.: ano 0202). Quartis por interpolação linear (QUARTIL.INC). Os lançamentos da própria semana não entram no histórico.
+- O boletim chama o valor Q3 + 3×IQR de "referência estatística", não de "limite", e diz que ficar acima dela não indica irregularidade.
+- **Aprovação por formulário do n8n, não por botões:** o Telegram recusa botões com link para `localhost` ("Wrong HTTP URL"), e aprovar dentro do chat exige o n8n em HTTPS público. O rascunho vai como mensagem comum, com o link do formulário (Aprovar/Descartar, prazo de 2 dias) no fim. O Telegram não deixa esse link clicável: é preciso copiar e abrir no navegador do PC.
+- **1ª execução real:** 21/10/2026, semana de 12 a 18/10 (execução 31 no n8n), boletim entregue no Telegram e aprovado.
+
 ## 10. Estrutura do repositório
 
 ```
@@ -210,7 +220,7 @@ emenda-vira-voto/
 
 ## 14. Decisões em aberto
 
-1. Qual LLM/chave usar no n8n (Claude API ou outro)?
-2. Canal público no Telegram ou apenas e-mail para o boletim?
+1. ~~Qual LLM/chave usar no n8n (Claude API ou outro)?~~ Decidido em 21/10/2026: sem LLM na v1 (seção 9).
+2. ~~Canal público no Telegram ou apenas e-mail para o boletim?~~ Decidido em 21/10/2026: só Telegram privado por enquanto (seção 9).
 3. Correção monetária (IPCA) entra na v1 ou fica como Could?
 4. Título final do projeto ("Emenda vira voto?" é provisório).

@@ -19,7 +19,7 @@ Análise para o desafio **#DataGlowUp** (dados do Senado). Emendas de 2020 a 202
 - Malha municipal — [IBGE](https://servicodados.ibge.gov.br/api/docs/malhas)
 
 ## Stack
-Python + `basedosdados` (BigQuery) · Databricks Free Edition (catálogo `data_glow_up`, bronze/silver/gold) · página estática com D3 no GitHub Pages.
+Python + `basedosdados` (BigQuery) · Databricks Free Edition (catálogo `data_glow_up`, bronze/silver/gold) · página estática com D3 no GitHub Pages · n8n em Docker (automação).
 
 ## Como reproduzir
 
@@ -40,24 +40,28 @@ Python + `basedosdados` (BigQuery) · Databricks Free Edition (catálogo `data_g
    - `data/tse/votacao_candidato_munzona_2026.zip` — https://cdn.tse.jus.br/estatistica/sead/odsele/votacao_candidato_munzona/votacao_candidato_munzona_2026.zip
    - `data/tse_cand/consulta_cand_2026.zip` — https://cdn.tse.jus.br/estatistica/sead/odsele/consulta_cand/consulta_cand_2026.zip
    - `data/portal/EmendasParlamentares.zip` — https://portaldatransparencia.gov.br/download-de-dados/emendas-parlamentares/UNICO
+   - `data/tse2018/votacao_candidato_munzona_2018.zip` e `data/tse2018/consulta_cand_2018.zip` — mesmos endereços do TSE, trocando 2026 por 2018
 
 3. **Universo e bronze** (na raiz do repositório)
    ```bash
    .venv/Scripts/python ingest/senadores_reeleicao.py data/tse_cand/consulta_cand_2026.zip data/portal/EmendasParlamentares.zip
    .venv/Scripts/python ingest/bronze.py
+   .venv/Scripts/python ingest/bronze_2018.py   # eleição de 2018 (casamento pelo CPF)
    ```
 
 4. **Databricks:** rode o primeiro bloco de `notebooks/01_bronze.sql` (cria catálogo, schemas e Volume), envie os arquivos e rode os notebooks em ordem
    ```bash
    databricks fs cp -r data/bronze dbfs:/Volumes/data_glow_up/bronze/arquivos --overwrite
    ```
-   `01_bronze.sql` → `02_silver.sql` → `03_gold.sql` (SQL warehouse) → `04_correlacao.py` (computação serverless). Cada notebook termina com conferências (contagens e somas esperadas nos comentários).
+   `01_bronze.sql` → `02_silver.sql` → `03_gold.sql` (SQL warehouse) → `04_correlacao.py` → `05_eleicao_2018.py` (computação serverless). Cada notebook termina com conferências (contagens e somas esperadas nos comentários).
 
 5. **Números e página**
    ```bash
    .venv/Scripts/python ingest/exporta_site.py        # roda sql/gold/*.sql e grava site/data/
    .venv/Scripts/python -m http.server 8000 -d site   # abra http://localhost:8000
    ```
+
+6. **Automação "Radar do Senado"** (opcional; PRD seção 9): boletim semanal com as votações nominais do Plenário e as despesas da cota parlamentar (CEAPS) acima da referência estatística do próprio histórico, enviado ao Telegram com um link para aprovar ou descartar num formulário do n8n. Texto por modelo fixo, sem LLM. Instruções em [`n8n/docker-compose.yml`](n8n/docker-compose.yml); workflow em [`n8n/radar_senado.json`](n8n/radar_senado.json).
 
 O carrossel do LinkedIn fica em [`assets/carrossel/`](assets/carrossel/) (`carrossel.html` lê os mesmos dados da página).
 
