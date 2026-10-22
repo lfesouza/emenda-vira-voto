@@ -21,8 +21,8 @@ function mostraTooltip(evento, html) {
 const escondeTooltip = () => { tooltip.hidden = true; };
 
 Promise.all(
-  ["01_totais", "03_robustez", "04_ranking", "05_municipios"].map(n => d3.json(`data/${n}.json`))
-).then(([totais, robustez, ranking, municipios]) => {
+  ["01_totais", "03_robustez", "04_ranking", "05_municipios", "09_casos_concretos", "11_senador_mapa"].map(n => d3.json(`data/${n}.json`))
+).then(([totais, robustez, ranking, municipios, casos, senadorMapa]) => {
   const t = totais[0];
   const r = robustez[0];
   document.getElementById("t-rs").textContent = `R$ ${fmt.num(t.rs_individual_bi, 2)} bi`;
@@ -37,6 +37,7 @@ Promise.all(
   desenhaRanking(noRanking);
   desenhaRobustez(r);
   preencheTabela(ranking);
+  preencheCasos(casos, senadorMapa[0]);
   montaSeletor(ranking.filter(s => s.sigla_uf !== "DF"), porSenador);
 
   let largura = window.innerWidth;
@@ -177,6 +178,23 @@ function montaSeletor(senadores, porSenador) {
     desenhaMapaDispersao(s, dados, malhas.get(s.sigla_uf));
   });
   sel.dispatchEvent(new Event("change"));
+}
+
+// Casos concretos (sql/gold/09) e o senador escolhido para o carrossel (sql/gold/11)
+function preencheCasos(casos, sm) {
+  document.getElementById("c-carrossel").textContent =
+    `O carrossel do LinkedIn mostra só ${sm.nome_parlamentar}, escolhido pela regra: maior ρ entre os senadores cujo ` +
+    `ρ do placebo (emenda dos outros) fica pelo menos 0,2 abaixo do próprio ρ (${fmt.rho(sm.rho_placebo_emenda_outros)} contra ${fmt.rho(sm.rho)}).`;
+  document.getElementById("casos").innerHTML = casos.map(d => `
+    <div class="tile">
+      <h3>${d.nome_parlamentar} (${d.sigla_uf})</h3>
+      <span class="tile-rotulo">ρ = ${fmt.rho(d.rho)} · n = ${d.n} · p ${fmt.p(d.p_valor).startsWith("<") ? "" : "= "}${fmt.p(d.p_valor)}</span>
+      <p class="caso-mun"><strong>${d.municipio}</strong> · ${fmt.num(d.populacao)} hab.</p>
+      <span class="tile-valor">R$ ${fmt.num(d.rs_por_habitante, 2)}</span><span class="tile-rotulo">por habitante</span>
+      <span class="tile-valor">${fmt.num(d.pct_votos_2026, 1)}%</span><span class="tile-rotulo">dos votos válidos</span>
+      ${d.rho - d.rho_placebo_emenda_outros < 0.2 ? `<p class="nota caso-obs">No caso dele, a emenda dos outros parlamentares
+        acompanha o voto quase na mesma medida (ρ ${fmt.rho(d.rho_placebo_emenda_outros)} contra ${fmt.rho(d.rho)}).</p>` : ""}
+    </div>`).join("");
 }
 
 function resumo(s) {

@@ -81,6 +81,7 @@ Queries de reprodução em `sql/gold/` (rodam sobre o catálogo `data_glow_up`):
 - `08_resumo_2018.sql`: resumo da eleição de 2018 (28 senadores).
 - `09_casos_concretos.sql`: para os 3 senadores com maior ρ, o município com maior emenda per capita entre os com mais de 10 mil habitantes.
 - `10_ufs_sem_senador.sql`: UFs sem nenhum dos 32 (PR, RO, RS, SP).
+- `11_senador_mapa.sql`: senador do slide de mapa do carrossel — maior ρ entre os do ranking cujo ρ do placebo (emenda dos outros) fica pelo menos 0,2 abaixo do próprio (regra decidida em 21/10/2026; resultado: Veneziano Vital do Rêgo), com o município do caso concreto dele.
 - `06_resultado_eleitoral.sql`: eleitos e não eleitos entre os senadores com ρ positivo e p < 0,05 (7 de 18 eleitos, 38,9%) e os demais (6 de 11, 54,5%). Diferença não significativa (teste exato de Fisher, p = 0,47, calculado à parte com `scipy.stats.fisher_exact` sobre essa tabela 2×2); não publicada como achado.
 
 ## Pipeline (Databricks, catálogo `data_glow_up`)

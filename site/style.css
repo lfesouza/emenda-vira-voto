@@ -83,6 +83,9 @@ code { font-size: 0.9em; }
 .tile { background: var(--superficie); border: 1px solid var(--borda); border-radius: 8px; padding: 16px; }
 .tile-valor { display: block; font-size: 1.9rem; font-weight: 650; line-height: 1.15; }
 .tile-rotulo { display: block; font-size: 0.85rem; color: var(--tinta-2); margin-top: 6px; }
+.tile h3 { color: var(--tinta); margin: 0; }
+.caso-mun { margin: 10px 0 6px; font-size: 0.95rem; }
+.caso-obs { margin: 10px 0 0; }
 
 .grafico { background: var(--superficie); border: 1px solid var(--borda); border-radius: 8px; padding: 8px; }
 .grafico svg { display: block; width: 100%; height: auto; }
