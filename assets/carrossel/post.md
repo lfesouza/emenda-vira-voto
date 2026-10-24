@@ -14,7 +14,7 @@ O que os dados mostram:
 
 → R$ 8,74 bi em emendas individuais desses 32 senadores (emendas de 2020 a 2026). 53,1% foram pagos ao próprio município e entram na comparação. O resto (governo estadual, Banco do Brasil como intermediário, entidades) fica de fora.
 
-→ Em 18 dos 29 senadores analisados, a correlação entre emenda per capita e % de votos no município é positiva e estatisticamente significativa. Em nenhum ela é negativa e significativa.
+→ Em 18 dos 29 senadores analisados (ficam de fora o DF, que tem um só município, e 2 senadores abaixo das regras mínimas), a correlação entre emenda per capita e % de votos no município é positiva e estatisticamente significativa. Em nenhum ela é negativa e significativa.
 
 → A relação é moderada: ρ de Spearman mediano de 0,24.
 

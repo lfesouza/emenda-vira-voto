@@ -21,10 +21,19 @@ function mostraTooltip(evento, html) {
 const escondeTooltip = () => { tooltip.hidden = true; };
 
 Promise.all(
-  ["01_totais", "03_robustez", "04_ranking", "05_municipios", "09_casos_concretos", "11_senador_mapa"].map(n => d3.json(`data/${n}.json`))
-).then(([totais, robustez, ranking, municipios, casos, senadorMapa]) => {
+  ["01_totais", "03_robustez", "04_ranking", "05_municipios", "09_casos_concretos", "11_senador_mapa", "08_resumo_2018"].map(n => d3.json(`data/${n}.json`))
+).then(([totais, robustez, ranking, municipios, casos, senadorMapa, resumo2018]) => {
   const t = totais[0];
   const r = robustez[0];
+  const e = resumo2018[0];
+  document.getElementById("e-n2018").textContent = e.senadores;
+  document.getElementById("m-2018").textContent =
+    `Em ${e.variacao_positivo_p05} de ${e.senadores}, onde chegou mais emenda, o voto cresceu mais entre 2018 e 2026 ` +
+    `(ρ > 0, p < 0,05); ${e.variacao_negativo_p05 === 0 ? "nenhum mostra o contrário" : `${e.variacao_negativo_p05} mostram o contrário`}.`;
+  document.getElementById("e-2018-voto").textContent =
+    `Com o voto de 2018, ${e.voto_2018_positivo_p05} de ${e.senadores} têm relação positiva estatisticamente ` +
+    `significativa e ${e.voto_2018_negativo_p05} tem relação negativa significativa. n de ${e.n_minimo} a ` +
+    `${fmt.num(e.n_maximo, 0)} municípios por senador.`;
   document.getElementById("t-rs").textContent = `R$ ${fmt.num(t.rs_individual_bi, 2)} bi`;
   document.getElementById("t-pct").textContent = `${fmt.num(t.pct_com_municipio, 1)}%`;
   document.getElementById("t-sig").textContent = `${r.rho_positivo_p05} de ${r.senadores}`;
@@ -36,6 +45,7 @@ Promise.all(
 
   desenhaRanking(noRanking);
   desenhaRobustez(r);
+  desenha2018(e);
   preencheTabela(ranking);
   preencheCasos(casos, senadorMapa[0]);
   montaSeletor(ranking.filter(s => s.sigla_uf !== "DF"), porSenador);
@@ -46,12 +56,14 @@ Promise.all(
     largura = window.innerWidth;
     desenhaRanking(noRanking);
     desenhaRobustez(r);
+    desenha2018(e);
     document.getElementById("sel-senador").dispatchEvent(new Event("change"));
   });
   // Troca de tema do sistema: redesenha com as cores do novo modo
   matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => {
     desenhaRanking(noRanking);
     desenhaRobustez(r);
+    desenha2018(e);
     document.getElementById("sel-senador").dispatchEvent(new Event("change"));
   });
 });
@@ -124,14 +136,29 @@ function desenhaRobustez(r) {
     { teste: "Placebo: emenda dos outros parlamentares", curto: "Placebo: emenda outros", v: r.placebo_emenda_outros_mediano, placebo: true },
     { teste: "Placebo: voto dos outros candidatos*", curto: "Placebo: voto outros*", v: r.placebo_voto_outros_mediano, placebo: true },
   ];
-  const el = document.getElementById("g-robustez");
+  desenhaBarras("g-robustez", dados, [-0.2, 0.3],
+    "* referência fraca: os % de um município somam 200%, o que puxa o ρ para baixo");
+}
+
+function desenha2018(e) {
+  const dados = [
+    { teste: "Emenda × voto 2018", curto: "Voto 2018", v: e.rho_voto_2018_mediano, placebo: false },
+    { teste: "Emenda × variação 2018→2026", curto: "Variação 2018→2026", v: e.rho_variacao_mediano, placebo: false },
+    { teste: "Emenda × voto 2026 (mesmos senadores)", curto: "Voto 2026", v: e.rho_2026_mediano_mesmos, placebo: false },
+  ];
+  desenhaBarras("g-2018", dados, [0, 0.3], null);
+}
+
+// Barras horizontais de ρ mediano; nota opcional no rodapé
+function desenhaBarras(id, dados, dominio, nota) {
+  const el = document.getElementById(id);
   el.innerHTML = "";
   const w = el.clientWidth - 16;
   const estreito = w < 520;
   const m = { top: 8, right: 48, bottom: 40, left: estreito ? 130 : 260 };
   const barra = 18, passo = 34;
   const h = m.top + m.bottom + passo * dados.length;
-  const x = d3.scaleLinear().domain([-0.2, 0.3]).range([m.left, w - m.right]);
+  const x = d3.scaleLinear().domain(dominio).range([m.left, w - m.right]);
   const svg = d3.select(el).append("svg").attr("viewBox", `0 0 ${w} ${h}`);
   svg.append("g").attr("class", "grade").selectAll("line").data(x.ticks(5)).join("line")
     .attr("x1", d => x(d)).attr("x2", d => x(d)).attr("y1", m.top).attr("y2", h - m.bottom);
@@ -151,8 +178,7 @@ function desenhaRobustez(r) {
     .text(d => fmt.rho(d.v));
   svg.append("line").attr("x1", x(0)).attr("x2", x(0)).attr("y1", m.top).attr("y2", h - m.bottom)
     .attr("stroke", css("--eixo")).attr("stroke-width", 1.5);
-  svg.append("text").attr("x", m.left).attr("y", h - 4).style("font-size", "11px")
-    .text("* referência fraca: os % de um município somam 200%, o que puxa o ρ para baixo");
+  if (nota) svg.append("text").attr("x", m.left).attr("y", h - 4).style("font-size", "11px").text(nota);
 }
 
 function barraArredondada(x0, x1, y, h, raio) {
